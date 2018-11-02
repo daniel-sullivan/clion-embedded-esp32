@@ -1,4 +1,4 @@
-package xyz.elmot.clion.openocd;
+package esp32.embedded.clion.openocd;
 
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
@@ -20,6 +20,7 @@ import java.util.function.Supplier;
 public abstract class FileChooseInput extends TextFieldWithBrowseButton {
 
     public static final String BOARD_FOLDER = "board";
+    public static final String INTERFACE_FOLDER = "interface";
     protected final TextFieldValueEditor<VirtualFile> editor;
     private final FileChooserDescriptor fileDescriptor;
 
@@ -94,6 +95,82 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
                 VirtualFile ocdBoards = ocdScripts.findFileByRelativePath(BOARD_FOLDER);
                 if (ocdBoards != null) {
                     return ocdBoards;
+                }
+            }
+            return super.getDefaultLocation();
+        }
+
+        @NotNull
+        @Override
+        protected VirtualFile parseTextToFile(@Nullable String text) {
+            VirtualFile file;
+            if (text == null) {
+                file = editor.getDefaultValue();
+            } else {
+                file = LocalFileSystem.getInstance().findFileByPath(text);
+                if (file == null) {
+                    VirtualFile ocdScripts = findOcdScripts();
+                    if (ocdScripts != null) {
+                        file = ocdScripts.findFileByRelativePath(text);
+                    }
+                }
+            }
+            if (file == null || !validateFile(file)) {
+                throw new InvalidDataException("is invalid");
+            }
+            return file;
+        }
+
+        private VirtualFile getOpenOcdHome() {
+            return LocalFileSystem.getInstance().findFileByPath(ocdHome.get());
+        }
+
+        @Override
+        protected boolean validateFile(VirtualFile virtualFile) {
+            return virtualFile.exists() && !virtualFile.isDirectory();
+        }
+
+        @Override
+        protected FileChooserDescriptor createFileChooserDescriptor() {
+            return FileChooserDescriptorFactory.createSingleLocalFileDescriptor();
+        }
+
+        @Override
+        protected String fileToTextValue(VirtualFile file) {
+            String completeFileName = super.fileToTextValue(file);
+            VirtualFile ocdScripts = findOcdScripts();
+            if (ocdScripts != null) {
+                String relativePath = VfsUtil.getRelativePath(file, ocdScripts);
+                if (relativePath != null) {
+                    return relativePath;
+                }
+            }
+            return completeFileName;
+        }
+
+        @Nullable
+        private VirtualFile findOcdScripts() {
+            return OpenOcdSettingsState.findOcdScripts(getOpenOcdHome());
+        }
+
+    }
+
+    public static class InterfaceCfg extends FileChooseInput {
+
+        private final Supplier<String> ocdHome;
+
+        public InterfaceCfg(String valueName, VirtualFile defValue, Supplier<String> ocdHome) {
+            super(valueName, defValue);
+            this.ocdHome = ocdHome;
+        }
+
+        @Override
+        protected VirtualFile getDefaultLocation() {
+            VirtualFile ocdScripts = findOcdScripts();
+            if (ocdScripts != null) {
+                VirtualFile ocdInterfaces = ocdScripts.findFileByRelativePath(INTERFACE_FOLDER);
+                if (ocdInterfaces != null) {
+                    return ocdInterfaces;
                 }
             }
             return super.getDefaultLocation();

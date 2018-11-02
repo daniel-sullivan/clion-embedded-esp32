@@ -1,4 +1,4 @@
-package xyz.elmot.clion.openocd;
+package esp32.embedded.clion.openocd;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.RunContentExecutor;
@@ -87,14 +87,25 @@ public class OpenOcdComponent {
         if (config.getTelnetPort() != OpenOcdConfiguration.DEF_TELNET_PORT) {
             commandLine.addParameters("-c", "telnet_port " + config.getTelnetPort());
         }
+
+        commandLine.addParameters("-f", config.getInterfaceConfigFile());
+
         commandLine.addParameters("-f", config.getBoardConfigFile());
-        if (fileToLoad != null) {
-            String command = "program \"" + fileToLoad.getAbsolutePath().replace(File.separatorChar, '/') + "\"";
+
+        if (fileToLoad != null) { // Program Command
+            String command = "program_esp32 " + fileToLoad.getAbsolutePath().replace(File.separatorChar, '/').replace(".elf", ".bin");
+            if (config.getOffset() != null && !config.getOffset().isEmpty())
+                command = command + " " + config.getOffset();
+
             commandLine.addParameters("-c", command);
         }
-        if (additionalCommand != null && !additionalCommand.isEmpty()) {
-            commandLine.addParameters("-c", additionalCommand);
+
+        if (config.getHAR()) {
+            commandLine.addParameters("-c", "init; reset halt");
+        } else {
+            commandLine.addParameters("-c", "init; reset");
         }
+
         if (shutdown) {
             commandLine.addParameters("-c", "shutdown");
         }
@@ -124,9 +135,9 @@ public class OpenOcdComponent {
     }
 
     @SuppressWarnings("WeakerAccess")
-    public Future<STATUS> startOpenOcd(OpenOcdConfiguration config, @Nullable File fileToLoad, @Nullable String additionalCommand) throws ConfigurationException {
+    public Future<STATUS> startOpenOcd(OpenOcdConfiguration config, @Nullable File fileToLoad) throws ConfigurationException {
         if (config == null) return new FutureResult<>(STATUS.FLASH_ERROR);
-        GeneralCommandLine commandLine = createOcdCommandLine(config, fileToLoad, additionalCommand, false);
+        GeneralCommandLine commandLine = createOcdCommandLine(config, fileToLoad, null, false);
         if (process != null && !process.isProcessTerminated()) {
             LOG.info("openOcd is already run");
             return new FutureResult<>(STATUS.FLASH_ERROR);

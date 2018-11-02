@@ -1,4 +1,4 @@
-package xyz.elmot.clion.openocd;
+package esp32.embedded.clion.openocd;
 
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;

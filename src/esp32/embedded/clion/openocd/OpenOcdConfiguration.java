@@ -1,4 +1,4 @@
-package xyz.elmot.clion.openocd;
+package esp32.embedded.clion.openocd;
 
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
@@ -23,18 +23,32 @@ import org.jetbrains.annotations.Nullable;
 public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements CidrExecutableDataHolder {
     public static final int DEF_GDB_PORT = 3333;
     public static final int DEF_TELNET_PORT = 4444;
-    public static final Namespace NAMESPACE = Namespace.getNamespace("elmot-ocd", "https://github.com/elmot/clion-embedded-arm");
-    private static final String ATTR_GDB_PORT = "gdb-port";
-    private static final String ATTR_TELNET_PORT = "telnet-port";
-    private static final String ATTR_BOARD_CONFIG = "board-config";
-    public static final String ATTR_RESET_TYPE = "reset-type";
-    public static final String ATTR_DOWNLOAD_TYPE = "download-type";
-    public static final ResetType DEFAULT_RESET = ResetType.INIT;
+    public static final String DEF_PROGRAM_OFFSET = "0x10000";
+    public static final boolean DEF_HAR = true;
+    public static final boolean DEF_FLUSH_REGS = true;
+    public static final boolean DEF_BREAK_FUNCTION = true;
+    public static final String DEF_BREAK_FUNCTION_NAME = "app_main";
+    private static final String ATTR_GDB_PORT = "gdb_port";
+    private static final String ATTR_TELNET_PORT = "telnet_port";
+    private static final String ATTR_BOARD_CONFIG = "board_config";
+    private static final String ATTR_INTERFACE_CONFIG = "interface_config";
+    public static final String ATTR_DOWNLOAD_TYPE = "download_type";
+    public static final String ATTR_HAR = "halt_on_reset";
+    public static final String ATTR_FLUSH_REGS = "flush_regs";
+    public static final String ATTR_BREAK_FUNCTION = "break";
+    public static final String ATTR_BREAK_FUNCTION_NAME = "break_function";
+
+
     private int gdbPort = DEF_GDB_PORT;
     private int telnetPort = DEF_TELNET_PORT;
     private String boardConfigFile;
+    private String interfaceConfigFile;
     private DownloadType downloadType = DownloadType.ALWAYS;
-    private ResetType resetType = DEFAULT_RESET;
+    private String offset = DEF_PROGRAM_OFFSET;
+    private boolean haltOnReset = DEF_HAR;
+    private boolean flushRegs = DEF_FLUSH_REGS;
+    private boolean initialBreak = DEF_BREAK_FUNCTION;
+    private String initialBreakName = DEF_BREAK_FUNCTION_NAME;
 
     public enum DownloadType {
 
@@ -73,8 +87,6 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
             return command;
         }
 
-        ;
-
     }
 
 
@@ -92,21 +104,25 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     @Override
     public void readExternal(@NotNull Element element) throws InvalidDataException {
         super.readExternal(element);
-        boardConfigFile = element.getAttributeValue(ATTR_BOARD_CONFIG, NAMESPACE);
+        boardConfigFile = element.getAttributeValue(ATTR_BOARD_CONFIG);
+        interfaceConfigFile = element.getAttributeValue(ATTR_INTERFACE_CONFIG);
         gdbPort = readIntAttr(element, ATTR_GDB_PORT, DEF_GDB_PORT);
         telnetPort = readIntAttr(element, ATTR_TELNET_PORT, DEF_TELNET_PORT);
-        resetType = readEnumAttr(element, ATTR_RESET_TYPE, DEFAULT_RESET);
         downloadType = readEnumAttr(element, ATTR_DOWNLOAD_TYPE, DownloadType.ALWAYS);
+        haltOnReset = readBoolAttr(element, ATTR_HAR, DEF_HAR);
+        flushRegs = readBoolAttr(element, ATTR_FLUSH_REGS, DEF_FLUSH_REGS);
+        initialBreak = readBoolAttr(element, ATTR_BREAK_FUNCTION, DEF_BREAK_FUNCTION);
+        initialBreakName = element.getAttributeValue(ATTR_BREAK_FUNCTION_NAME,null,DEF_BREAK_FUNCTION_NAME);
     }
 
     private int readIntAttr(@NotNull Element element, String name, int def) {
-        String s = element.getAttributeValue(name, NAMESPACE);
+        String s = element.getAttributeValue(name);
         if (StringUtil.isEmpty(s)) return def;
         return Integer.parseUnsignedInt(s);
     }
 
     private <T extends Enum> T readEnumAttr(@NotNull Element element, String name, T def) {
-        String s = element.getAttributeValue(name, NAMESPACE);
+        String s = element.getAttributeValue(name);
         if (StringUtil.isEmpty(s)) return def;
         try {
             //noinspection unchecked
@@ -116,16 +132,33 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         }
     }
 
+    private boolean readBoolAttr(@NotNull Element element, String name, boolean def) {
+        String s = element.getAttributeValue(name);
+        if (StringUtil.isEmpty(s)) return def;
+        try {
+            return Boolean.parseBoolean(s);
+        } catch (Throwable t) {
+            return def;
+        }
+    }
+
     @Override
     public void writeExternal(@NotNull Element element) throws WriteExternalException {
         super.writeExternal(element);
-        element.setAttribute(ATTR_GDB_PORT, "" + gdbPort, NAMESPACE);
-        element.setAttribute(ATTR_TELNET_PORT, "" + telnetPort, NAMESPACE);
+        element.setAttribute(ATTR_GDB_PORT, "" + gdbPort);
+        element.setAttribute(ATTR_TELNET_PORT, "" + telnetPort);
         if (boardConfigFile != null) {
-            element.setAttribute(ATTR_BOARD_CONFIG, boardConfigFile, NAMESPACE);
+            element.setAttribute(ATTR_BOARD_CONFIG, boardConfigFile);
         }
-        element.setAttribute(ATTR_RESET_TYPE, resetType.name(), NAMESPACE);
-        element.setAttribute(ATTR_DOWNLOAD_TYPE, downloadType.name(), NAMESPACE);
+        if (interfaceConfigFile != null) {
+            element.setAttribute(ATTR_INTERFACE_CONFIG, interfaceConfigFile);
+        }
+        element.setAttribute(ATTR_DOWNLOAD_TYPE, downloadType.name());
+        element.setAttribute(ATTR_HAR, String.valueOf(haltOnReset));
+        element.setAttribute(ATTR_FLUSH_REGS, String.valueOf(flushRegs));
+        element.setAttribute(ATTR_BREAK_FUNCTION, String.valueOf(initialBreak));
+        element.setAttribute(ATTR_BREAK_FUNCTION_NAME, initialBreakName);
+
     }
 
     @Override
@@ -166,9 +199,18 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         return boardConfigFile;
     }
 
+    public String getInterfaceConfigFile() {
+        return interfaceConfigFile;
+    }
+
     public void setBoardConfigFile(String boardConfigFile) {
         this.boardConfigFile = boardConfigFile;
     }
+
+    public void setInterfaceConfigFile(String interfaceConfigFile) {
+        this.interfaceConfigFile = interfaceConfigFile;
+    }
+
 
     public DownloadType getDownloadType() {
         return downloadType;
@@ -178,11 +220,18 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         this.downloadType = downloadType;
     }
 
-    public ResetType getResetType() {
-        return resetType;
-    }
+    public String getOffset() { return offset; }
+    public void setOffset(String offset) { this.offset = offset; }
 
-    public void setResetType(ResetType resetType) {
-        this.resetType = resetType;
-    }
+    public boolean getHAR() { return haltOnReset; }
+    public void setHAR(boolean haltOnReset) { this.haltOnReset = haltOnReset; }
+
+    public boolean getFlushRegs() { return flushRegs; }
+    public void  setFlushRegs(boolean flushRegs) { this.flushRegs = flushRegs; }
+
+    public boolean getInitialBreak() { return initialBreak; }
+    public void setInitialBreak(boolean initialBreak) { this.initialBreak = initialBreak; }
+
+    public String getInitialBreakName() { return initialBreakName; }
+    public void setInitialBreakName(String initialBreakName) { this.initialBreakName = initialBreakName; }
 }

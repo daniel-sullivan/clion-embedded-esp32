@@ -1,4 +1,4 @@
-package xyz.elmot.clion.openocd;
+package esp32.embedded.clion.openocd;
 
 import javax.swing.event.HyperlinkEvent;
 import java.util.Objects;
@@ -80,15 +80,15 @@ public class Informational {
         @Override
         protected void hyperlinkActivated(HyperlinkEvent e) {
             String link = Objects.toString(e.getDescription(),"");
-            if(link.toLowerCase().startsWith(SETTINGS_PROTOCOL)) {
-                try {
-                    String className = link.substring(SETTINGS_PROTOCOL.length());
-                    ShowSettingsUtil.getInstance().showSettingsDialog(project, Class.forName(className));
-                } catch (ClassNotFoundException ignored) {
-                }
-            } else {
-                BrowserUtil.browse(link);
-            }
+//            if(link.toLowerCase().startsWith(SETTINGS_PROTOCOL)) {
+//                try {
+//                    String className = link.substring(SETTINGS_PROTOCOL.length());
+//                    //ShowSettingsUtil.getInstance().showSettingsDialog(project, Class.forName(className));
+//                } catch (ClassNotFoundException ignored) {
+//                }
+//            } else {
+//                BrowserUtil.browse(link);
+//            }
         }
     }
 }
