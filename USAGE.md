@@ -43,4 +43,4 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md)
 Likes and Donations
 ===
 
-If you like the plugin, you may :star: the project at github (button at top-right of the page) and at [jetbrains plugins repository](https://plugins.jetbrains.com/plugin/10115).
+If you like the plugin, you may :star: the project at github (button at top-right of the page) and at [jetbrains plugins repository](https://plugins.jetbrains.com/plugin/11284).
