@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>esp32.embedded.clion.armsupport.prj</id>
     <name>OpenOCD + ESP32 Support for embedded development</name>
-    <version>0.1.alpha1</version>
+    <version>0.1.alpha2</version>
     <vendor email="daniel.sullivan@reticulum.it" url="https://github.com/daniel-sullivan/clion-embedded-esp32">Daniel Sullivan (Reticulum IT)</vendor>
 
     <description><![CDATA[
@@ -34,7 +34,7 @@ Disclaimer
     </change-notes>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-    <idea-version since-build="182.9999" until-build="183.*"/>
+    <idea-version since-build="190.*" />
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->

@@ -21,7 +21,7 @@ import com.intellij.xdebugger.XDebugSessionListener;
 import com.intellij.xdebugger.frame.XExecutionStack;
 import com.intellij.xdebugger.frame.XSuspendContext;
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration;
-import com.jetbrains.cidr.cpp.execution.debugger.backend.GDBDriverConfiguration;
+import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionGDBDriverConfiguration;
 import com.jetbrains.cidr.cpp.toolchains.CPPDebugger;
 import com.jetbrains.cidr.cpp.toolchains.CPPToolchains;
 import com.jetbrains.cidr.execution.CidrDebuggerBundle;
@@ -108,7 +108,8 @@ class OpenOcdLauncher extends CidrLauncher {
             CPPDebugger cppDebugger = CPPDebugger.create(CPPDebugger.Kind.CUSTOM_GDB, gdbPath);
             toolchain.setDebugger(cppDebugger);
         }
-        GDBDriverConfiguration gdbDriverConfiguration = new GDBDriverConfiguration(getProject(), toolchain);
+        CLionGDBDriverConfiguration gdbDriverConfiguration = new CLionGDBDriverConfiguration(getProject(), toolchain);
+
         xDebugSession.stop();
         CidrRemoteGDBDebugProcess debugProcess =
                 new CidrRemoteGDBDebugProcess(gdbDriverConfiguration,
