@@ -6,21 +6,21 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.intellij.ui.components.fields.IntegerField;
-import com.intellij.ui.components.panels.HorizontalBox;
 import com.intellij.util.ui.GridBag;
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration;
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfigurationSettingsEditor;
 import com.jetbrains.cidr.cpp.execution.CMakeBuildConfigurationHelper;
+import esp32.embedded.clion.openocd.OpenOcdConfiguration.DownloadType;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.ItemEvent;
+import javax.swing.Box;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import org.jdesktop.swingx.JXRadioGroup;
 import org.jetbrains.annotations.NotNull;
-import esp32.embedded.clion.openocd.OpenOcdConfiguration.DownloadType;
-import esp32.embedded.clion.openocd.OpenOcdConfiguration.ResetType;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 
 public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettingsEditor {
     private IntegerField gdbPort;
@@ -37,7 +37,8 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
 
     @SuppressWarnings("WeakerAccess")
-    public OpenOcdConfigurationEditor(Project project, @NotNull CMakeBuildConfigurationHelper cMakeBuildConfigurationHelper) {
+    public OpenOcdConfigurationEditor(Project project,
+                                      @NotNull CMakeBuildConfigurationHelper cMakeBuildConfigurationHelper) {
         super(project, cMakeBuildConfigurationHelper);
     }
 
@@ -107,7 +108,8 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
         panel.add(new JLabel("Interface config file:"), gridBag.nextLine().next());
 
-        interfaceConfigFile = new FileChooseInput.InterfaceCfg("Interface config", VfsUtil.getUserHomeDir(), this::getOpenocdHome);
+        interfaceConfigFile = new FileChooseInput.InterfaceCfg("Interface config", VfsUtil.getUserHomeDir(),
+                this::getOpenocdHome);
         panel.add(interfaceConfigFile, gridBag.next().coverLine());
 
 
@@ -147,7 +149,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
     private JPanel createGDBSettingsSelector() {
         JPanel settingsPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-        GridLayout settingsGrid = new GridLayout(2,4);
+        GridLayout settingsGrid = new GridLayout(2, 4);
         settingsPanel.setLayout(settingsGrid);
 
         flushRegsCheck = new JCheckBox("Flush registers", OpenOcdConfiguration.DEF_FLUSH_REGS);
@@ -166,13 +168,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         settingsPanel.add(harCheck);
 
         initialBreakpointCheck = new JCheckBox("Break on function", OpenOcdConfiguration.DEF_BREAK_FUNCTION);
-        initialBreakpointCheck.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                initialBreakpointName.setVisible(true);
-            } else {
-                initialBreakpointName.setVisible(false);
-            }
-        });
+        initialBreakpointCheck.addItemListener(e -> initialBreakpointName.setVisible(e.getStateChange() == ItemEvent.SELECTED));
         settingsPanel.add(initialBreakpointCheck);
 
         initialBreakpointName = new ExtendableTextField(OpenOcdConfiguration.DEF_BREAK_FUNCTION_NAME);
@@ -190,7 +186,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         return field;
     }
 
-    private ExtendableTextField addOffsetInput( String defaultValue) {
+    private ExtendableTextField addOffsetInput(String defaultValue) {
         ExtendableTextField field = new ExtendableTextField(defaultValue);
         field.setColumns(5);
         return field;

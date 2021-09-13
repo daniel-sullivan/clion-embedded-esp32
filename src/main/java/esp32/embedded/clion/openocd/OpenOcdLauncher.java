@@ -4,9 +4,10 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.CommandLineState;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.filters.Filter;
-import com.intellij.execution.filters.TextConsoleBuilder;
-import com.intellij.execution.process.*;
-import com.intellij.execution.ui.ConsoleView;
+import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ExecutionConsole;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -16,33 +17,26 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.ThrowableComputable;
+import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugSession;
-import com.intellij.xdebugger.XDebugSessionListener;
-import com.intellij.xdebugger.frame.XExecutionStack;
-import com.intellij.xdebugger.frame.XSuspendContext;
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration;
 import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionGDBDriverConfiguration;
 import com.jetbrains.cidr.cpp.toolchains.CPPDebugger;
 import com.jetbrains.cidr.cpp.toolchains.CPPToolchains;
-import com.jetbrains.cidr.execution.CidrDebuggerBundle;
-import com.jetbrains.cidr.execution.RunParameters;
+import com.jetbrains.cidr.execution.CidrLauncher;
 import com.jetbrains.cidr.execution.debugger.CidrDebugProcess;
 import com.jetbrains.cidr.execution.debugger.CidrDebuggerPathManager;
 import com.jetbrains.cidr.execution.debugger.backend.DebuggerCommandException;
 import com.jetbrains.cidr.execution.debugger.backend.DebuggerDriver;
 import com.jetbrains.cidr.execution.debugger.remote.CidrRemoteDebugParameters;
 import com.jetbrains.cidr.execution.debugger.remote.CidrRemoteGDBDebugProcess;
-import com.jetbrains.cidr.execution.testing.CidrLauncher;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import esp32.embedded.clion.openocd.OpenOcdComponent.STATUS;
 import esp32.embedded.clion.openocd.OpenOcdConfiguration.DownloadType;
-
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * (c) elmot on 19.10.2017.
@@ -127,7 +121,7 @@ class OpenOcdLauncher extends CidrLauncher {
         });
 
         debugProcess.getProcessHandler().putUserData(RESTART_KEY,
-                new AnAction("Reset", "MCU Reset", IconLoader.findIcon("reset.png", OpenOcdLauncher.class)) {
+                new AnAction("Reset", "MCU reset", IconLoader.findIcon("reset.png", OpenOcdLauncher.class)) {
                     @Override
                     public void actionPerformed(@NotNull AnActionEvent e) {
                         XDebugSession session = debugProcess.getSession();
@@ -184,7 +178,7 @@ class OpenOcdLauncher extends CidrLauncher {
 
                         session.resume();
 
-                    } catch (DebuggerCommandException exception) {
+                    } catch (DebuggerCommandException ignored) {
                     }
                 });
             }
@@ -215,8 +209,8 @@ class OpenOcdLauncher extends CidrLauncher {
 
     @NotNull
     @Override
-    public CidrDebugProcess startDebugProcess(@NotNull CommandLineState commandLineState,
-                                              @NotNull XDebugSession xDebugSession) throws ExecutionException {
+    public XDebugProcess startDebugProcess(@NotNull CommandLineState commandLineState,
+                                           @NotNull XDebugSession xDebugSession) throws ExecutionException {
 
         File runFile = null;
         if (openOcdConfiguration.getDownloadType() != DownloadType.NONE) {
@@ -231,7 +225,8 @@ class OpenOcdLauncher extends CidrLauncher {
             xDebugSession.stop();
             OpenOcdComponent openOcdComponent = findOpenOcdAction(commandLineState.getEnvironment().getProject());
             openOcdComponent.stopOpenOcd();
-            Future<OpenOcdComponent.STATUS> downloadResult = openOcdComponent.startOpenOcd(openOcdConfiguration, runFile);
+            Future<OpenOcdComponent.STATUS> downloadResult = openOcdComponent.startOpenOcd(openOcdConfiguration,
+                    runFile);
 
             ProgressManager progressManager = ProgressManager.getInstance();
             ThrowableComputable<OpenOcdComponent.STATUS, ExecutionException> process = () -> {
@@ -248,7 +243,7 @@ class OpenOcdLauncher extends CidrLauncher {
                     throw new ExecutionException(e);
                 }
             };
-            String progressTitle = runFile == null ? "Start OpenOCD" : "Firmware Download";
+            String progressTitle = runFile == null ? "Start OpenOCD" : "Firmware download";
             OpenOcdComponent.STATUS downloadStatus = progressManager.runProcessWithProgressSynchronously(
                     process, progressTitle, true, getProject());
             if (downloadStatus == OpenOcdComponent.STATUS.FLASH_ERROR) {
@@ -263,14 +258,13 @@ class OpenOcdLauncher extends CidrLauncher {
     }
 
     @Override
-    protected void collectAdditionalActions(@NotNull CommandLineState commandLineState,
-                                            @NotNull ProcessHandler processHandler,
-                                            @NotNull ExecutionConsole executionConsole, @NotNull List<AnAction> list)
-            throws ExecutionException {
-        super.collectAdditionalActions(commandLineState, processHandler, executionConsole, list);
+    protected void collectAdditionalActions(@NotNull CommandLineState state, @NotNull ProcessHandler processHandler,
+                                            @NotNull ExecutionConsole console,
+                                            @NotNull List<? super AnAction> actions) throws ExecutionException {
+        super.collectAdditionalActions(state, processHandler, console, actions);
         AnAction restart = processHandler.getUserData(RESTART_KEY);
         if (restart != null) {
-            list.add(restart);
+            actions.add(restart);
         }
     }
 
@@ -281,7 +275,7 @@ class OpenOcdLauncher extends CidrLauncher {
 
     @NotNull
     @Override
-    protected Project getProject() {
+    public Project getProject() {
         return openOcdConfiguration.getProject();
     }
 

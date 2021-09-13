@@ -12,7 +12,6 @@ import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration;
 import com.jetbrains.cidr.execution.CidrCommandLineState;
 import com.jetbrains.cidr.execution.CidrExecutableDataHolder;
 import org.jdom.Element;
-import org.jdom.Namespace;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -112,7 +111,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         haltOnReset = readBoolAttr(element, ATTR_HAR, DEF_HAR);
         flushRegs = readBoolAttr(element, ATTR_FLUSH_REGS, DEF_FLUSH_REGS);
         initialBreak = readBoolAttr(element, ATTR_BREAK_FUNCTION, DEF_BREAK_FUNCTION);
-        initialBreakName = element.getAttributeValue(ATTR_BREAK_FUNCTION_NAME,null,DEF_BREAK_FUNCTION_NAME);
+        initialBreakName = element.getAttributeValue(ATTR_BREAK_FUNCTION_NAME, null, DEF_BREAK_FUNCTION_NAME);
     }
 
     private int readIntAttr(@NotNull Element element, String name, int def) {
@@ -121,7 +120,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         return Integer.parseUnsignedInt(s);
     }
 
-    private <T extends Enum> T readEnumAttr(@NotNull Element element, String name, T def) {
+    private <T extends Enum<?>> T readEnumAttr(@NotNull Element element, String name, T def) {
         String s = element.getAttributeValue(name);
         if (StringUtil.isEmpty(s)) return def;
         try {
@@ -220,18 +219,43 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         this.downloadType = downloadType;
     }
 
-    public String getOffset() { return offset; }
-    public void setOffset(String offset) { this.offset = offset; }
+    public String getOffset() {
+        return offset;
+    }
 
-    public boolean getHAR() { return haltOnReset; }
-    public void setHAR(boolean haltOnReset) { this.haltOnReset = haltOnReset; }
+    public void setOffset(String offset) {
+        this.offset = offset;
+    }
 
-    public boolean getFlushRegs() { return flushRegs; }
-    public void  setFlushRegs(boolean flushRegs) { this.flushRegs = flushRegs; }
+    public boolean getHAR() {
+        return haltOnReset;
+    }
 
-    public boolean getInitialBreak() { return initialBreak; }
-    public void setInitialBreak(boolean initialBreak) { this.initialBreak = initialBreak; }
+    public void setHAR(boolean haltOnReset) {
+        this.haltOnReset = haltOnReset;
+    }
 
-    public String getInitialBreakName() { return initialBreakName; }
-    public void setInitialBreakName(String initialBreakName) { this.initialBreakName = initialBreakName; }
+    public boolean getFlushRegs() {
+        return flushRegs;
+    }
+
+    public void setFlushRegs(boolean flushRegs) {
+        this.flushRegs = flushRegs;
+    }
+
+    public boolean getInitialBreak() {
+        return initialBreak;
+    }
+
+    public void setInitialBreak(boolean initialBreak) {
+        this.initialBreak = initialBreak;
+    }
+
+    public String getInitialBreakName() {
+        return initialBreakName;
+    }
+
+    public void setInitialBreakName(String initialBreakName) {
+        this.initialBreakName = initialBreakName;
+    }
 }

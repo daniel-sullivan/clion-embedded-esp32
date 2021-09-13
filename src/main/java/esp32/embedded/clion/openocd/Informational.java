@@ -1,8 +1,5 @@
 package esp32.embedded.clion.openocd;
 
-import javax.swing.event.HyperlinkEvent;
-import java.util.Objects;
-
 import com.intellij.CommonBundle;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.application.ApplicationManager;
@@ -14,6 +11,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.HyperlinkAdapter;
+import javax.swing.event.HyperlinkEvent;
 
 /**
  * (c) elmot on 20.10.2017.
@@ -21,7 +19,8 @@ import com.intellij.ui.HyperlinkAdapter;
 @SuppressWarnings("WeakerAccess")
 public class Informational {
     public static final String SETTINGS_PROTOCOL = "settings://";
-    public static final String HELP_URL = "https://github.com/elmot/clion-embedded-arm/blob/master/USAGE.md";
+    public static final String HELP_URL = "https://github.com/daniel-sullivan/clion-embedded-esp32/blob/master/USAGE"
+            + ".md";
 
     private Informational() {
     }
@@ -48,25 +47,25 @@ public class Informational {
     @SuppressWarnings("WeakerAccess")
     public static void showFailedDownloadNotification(Project project) {
         showMessage(project, MessageType.ERROR,
-                "MCU Communication FAILURE.\nCheck <a href=\""+
+                "MCU Communication FAILURE.\nCheck <a href=\"" +
                         SETTINGS_PROTOCOL +
                         OpenOcdSettings.class.getName()
-                        +"\">OpenOCD configuration</a> and connection.<br>" +
+                        + "\">OpenOCD configuration</a> and connection.<br>" +
                         "Plugin documentation is located <a href=\"" + HELP_URL + "\">here</a>");
     }
 
     public static void showPluginError(Project project, ConfigurationException e) {
         int optionNo = Messages.showDialog(project, e.getLocalizedMessage(), e.getTitle(),
-                new String[]{Messages.OK_BUTTON, CommonBundle.settingsAction(), CommonBundle.getHelpButtonText()}
+                new String[]{Messages.getOkButton(), CommonBundle.settingsAction(), CommonBundle.getHelpButtonText()}
                 , 0, Messages.getErrorIcon());
         switch (optionNo) {
-            case 1:
-                ShowSettingsUtil.getInstance().showSettingsDialog(project, OpenOcdSettings.class);
-                break;
-            case 2:
-                BrowserUtil.browse(HELP_URL);
-                break;
-            default://nothing to do
+        case 1:
+            ShowSettingsUtil.getInstance().showSettingsDialog(project, OpenOcdSettings.class);
+            break;
+        case 2:
+            BrowserUtil.browse(HELP_URL);
+            break;
+        default://nothing to do
         }
     }
 
@@ -79,16 +78,16 @@ public class Informational {
 
         @Override
         protected void hyperlinkActivated(HyperlinkEvent e) {
-            String link = Objects.toString(e.getDescription(),"");
-//            if(link.toLowerCase().startsWith(SETTINGS_PROTOCOL)) {
-//                try {
-//                    String className = link.substring(SETTINGS_PROTOCOL.length());
-//                    //ShowSettingsUtil.getInstance().showSettingsDialog(project, Class.forName(className));
-//                } catch (ClassNotFoundException ignored) {
-//                }
-//            } else {
-//                BrowserUtil.browse(link);
-//            }
+             /*String link = Objects.toString(e.getDescription(), "");
+            if (link.toLowerCase().startsWith(SETTINGS_PROTOCOL)) {
+                try {
+                    String className = link.substring(SETTINGS_PROTOCOL.length());
+                    ShowSettingsUtil.getInstance().showSettingsDialog(project, (Class) Class.forName(className));
+                } catch (ClassNotFoundException ignored) {
+                }
+            } else {
+                BrowserUtil.browse(link);
+            }*/
         }
     }
 }

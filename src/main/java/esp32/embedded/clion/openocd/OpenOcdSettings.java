@@ -10,23 +10,30 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import com.jetbrains.cidr.cpp.toolchains.CPPToolchains;
+import java.awt.FlowLayout;
+import java.io.File;
+import java.util.Objects;
+import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
-import java.util.Objects;
-
-import static com.intellij.uiDesigner.core.GridConstraints.*;
+import static com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER;
+import static com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST;
+import static com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL;
+import static com.intellij.uiDesigner.core.GridConstraints.FILL_NONE;
+import static com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED;
+import static com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW;
 
 /**
  * (c) elmot on 20.10.2017.
  */
 @SuppressWarnings("WeakerAccess")
 public class OpenOcdSettings implements ProjectComponent, Configurable {
-    public static final OpenOcdSettingsState DEFAULT = new OpenOcdSettingsState();
     protected final Project project;
     private OpenOcdSettingsPanel panel = null;
 
@@ -45,7 +52,7 @@ public class OpenOcdSettings implements ProjectComponent, Configurable {
         OpenOcdSettingsState state = project.getComponent(OpenOcdSettingsState.class);
         if (state == null) return true;
         return !(
-                        Objects.equals(panel.openOcdHome.getText(), state.openOcdHome) &&
+                Objects.equals(panel.openOcdHome.getText(), state.openOcdHome) &&
                         panel.shippedRadioButton.isSelected() == state.shippedGdb &&
                         panel.autoUpdateCmake.isSelected() == state.autoUpdateCmake);
     }
@@ -77,7 +84,7 @@ public class OpenOcdSettings implements ProjectComponent, Configurable {
 
     @Override
     public void reset() {
-        OpenOcdSettingsState state = project.getComponent(OpenOcdSettingsState.class, DEFAULT);
+        OpenOcdSettingsState state = project.getComponent(OpenOcdSettingsState.class);
         panel.openOcdHome.setText(state.openOcdHome);
         panel.shippedRadioButton.setSelected(state.shippedGdb);
         panel.toolchainRadioButton.setSelected(!state.shippedGdb);
@@ -90,7 +97,7 @@ public class OpenOcdSettings implements ProjectComponent, Configurable {
      */
     public static class OpenOcdSettingsPanel extends JPanel {
 
-//        private final FileChooseInput boardConfigFile;
+        //        private final FileChooseInput boardConfigFile;
         private final FileChooseInput openOcdHome;
         private final JBCheckBox autoUpdateCmake;
         private JRadioButton toolchainRadioButton;
@@ -127,12 +134,12 @@ public class OpenOcdSettings implements ProjectComponent, Configurable {
 
         private void updateToolchainGdbName() {
             CPPToolchains.Toolchain toolchain = CPPToolchains.getInstance().getDefaultToolchain();
-            File debugger = toolchain == null ? null: toolchain.getDebugger().getGdbExecutable();
-            if(debugger == null){
+            File debugger = toolchain == null ? null : toolchain.getDebugger().getGdbExecutable();
+            if (debugger == null) {
                 toolchainRadioButton.setText("From Toolchain");
                 toolchainRadioButton.setToolTipText(null);
-            }else {
-                toolchainRadioButton.setText(String.format("From Toolchain (%s)",debugger.getName()));
+            } else {
+                toolchainRadioButton.setText(String.format("From Toolchain (%s)", debugger.getName()));
                 toolchainRadioButton.setToolTipText(debugger.getAbsolutePath());
             }
         }

@@ -12,10 +12,9 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.components.fields.valueEditors.TextFieldValueEditor;
+import java.util.function.Supplier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.function.Supplier;
 
 public abstract class FileChooseInput extends TextFieldWithBrowseButton {
 
@@ -33,13 +32,13 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
         addActionListener(e -> {
             VirtualFile virtualFile = null;
             String text = getTextField().getText();
-            if(text != null && !text.isEmpty())
-            try {
-                virtualFile = parseTextToFile(text);
-            } catch (InvalidDataException ignored) {
-                virtualFile = LocalFileSystem.getInstance().findFileByPath(text);
-            }
-            if(virtualFile == null) {
+            if (text != null && !text.isEmpty())
+                try {
+                    virtualFile = parseTextToFile(text);
+                } catch (InvalidDataException ignored) {
+                    virtualFile = LocalFileSystem.getInstance().findFileByPath(text);
+                }
+            if (virtualFile == null) {
                 virtualFile = getDefaultLocation();
             }
             VirtualFile chosenFile = FileChooser.chooseFile(fileDescriptor, null, virtualFile);
@@ -268,7 +267,7 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
             if (openOcdBinary == null || openOcdBinary.isDirectory()
                     || !VfsUtil.virtualToIoFile(openOcdBinary).canExecute()) return false;
             VirtualFile ocdScripts = OpenOcdSettingsState.findOcdScripts(virtualFile);
-            if(ocdScripts!=null) {
+            if (ocdScripts != null) {
                 VirtualFile ocdBoard = ocdScripts.findFileByRelativePath(BOARD_FOLDER);
                 return ocdBoard != null && ocdBoard.isDirectory();
             }
