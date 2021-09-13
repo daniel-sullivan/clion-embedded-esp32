@@ -2,8 +2,7 @@
 <idea-plugin>
     <id>esp32.embedded.clion.armsupport.prj</id>
     <name>OpenOCD + ESP32 Support for Embedded Development</name>
-    <vendor email="daniel.sullivan@reticulum.it" url="https://github.com/daniel-sullivan/clion-embedded-esp32">Daniel
-        Sullivan (Reticulum IT)
+    <vendor email="daniel.sullivan@reticulum.it" url="https://github.com/daniel-sullivan/clion-embedded-esp32">Daniel Sullivan (Reticulum IT)
     </vendor>
 
     <depends>com.intellij.modules.clion</depends>
