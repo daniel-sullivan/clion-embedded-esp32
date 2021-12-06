@@ -88,7 +88,6 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
 
     }
 
-
     @SuppressWarnings("WeakerAccess")
     public OpenOcdConfiguration(Project project, ConfigurationFactory configurationFactory, String targetName) {
         super(project, configurationFactory, targetName);
@@ -120,11 +119,11 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         return Integer.parseUnsignedInt(s);
     }
 
+    @SuppressWarnings("unchecked")
     private <T extends Enum<?>> T readEnumAttr(@NotNull Element element, String name, T def) {
         String s = element.getAttributeValue(name);
         if (StringUtil.isEmpty(s)) return def;
         try {
-            //noinspection unchecked
             return (T) Enum.valueOf(def.getDeclaringClass(), s);
         } catch (Throwable t) {
             return def;

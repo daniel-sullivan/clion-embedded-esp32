@@ -194,7 +194,7 @@ public class OpenOcdComponent {
          */
         @Nullable
         @Override
-        public Result applyFilter(String line, int entireLength) {
+        public Result applyFilter(@NotNull String line, int entireLength) {
             if (containsOneOf(line, FAIL_STRINGS)) {
                 Informational.showFailedDownloadNotification(project);
                 return new Result(0, line.length(), null,

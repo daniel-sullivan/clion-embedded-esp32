@@ -69,7 +69,6 @@ public class OpenOcdSettingsState implements PersistentStateComponent<OpenOcdSet
 
     @NotNull
     protected String defOpenOcdLocation() {
-
         if (!OS.isWindows()) return "/usr";
         VirtualFile defDir = VfsUtil.getUserHomeDir();
         if (defDir != null) {

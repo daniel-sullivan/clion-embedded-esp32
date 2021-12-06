@@ -133,7 +133,7 @@ class OpenOcdLauncher extends CidrLauncher {
                                         Thread.yield();
                                     }
                                 }, null);
-                                drv.executeConsoleCommand("monitor reset init");
+                                drv.executeInterpreterCommand("monitor reset init");
                                 session.resume();
                             } catch (DebuggerCommandException exception) {
                                 Informational.showFailedDownloadNotification(e.getProject());
@@ -169,11 +169,11 @@ class OpenOcdLauncher extends CidrLauncher {
 
                         // Determine which commands need to be run
                         if (openOcdConfiguration.getFlushRegs()) {
-                            drv.executeConsoleCommand("flushregs");
+                            drv.executeInterpreterCommand("flushregs");
                         }
 
                         if (openOcdConfiguration.getInitialBreak() && !openOcdConfiguration.getInitialBreakName().isEmpty()) {
-                            drv.executeConsoleCommand("thb " + openOcdConfiguration.getInitialBreakName());
+                            drv.executeInterpreterCommand("thb " + openOcdConfiguration.getInitialBreakName());
                         }
 
                         session.resume();
@@ -196,7 +196,7 @@ class OpenOcdLauncher extends CidrLauncher {
         if (runConfigurations == null) {
             throw new ExecutionException("Target is not defined");
         }
-        File runFile = runConfigurations.getRunFile();
+        File runFile = runConfigurations.getRunFile(getProject());
         if (runFile == null) {
             throw new ExecutionException("Run file is not defined for " + runConfigurations);
         }
@@ -271,7 +271,6 @@ class OpenOcdLauncher extends CidrLauncher {
     private OpenOcdComponent findOpenOcdAction(Project project) {
         return project.getComponent(OpenOcdComponent.class);
     }
-
 
     @NotNull
     @Override
