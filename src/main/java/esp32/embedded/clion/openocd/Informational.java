@@ -19,8 +19,7 @@ import javax.swing.event.HyperlinkEvent;
 @SuppressWarnings("WeakerAccess")
 public class Informational {
     public static final String SETTINGS_PROTOCOL = "settings://";
-    public static final String HELP_URL = "https://github.com/daniel-sullivan/clion-embedded-esp32/blob/master/USAGE"
-            + ".md";
+    public static final String HELP_URL = "https://github.com/ThexXTURBOXx/clion-embedded-esp32/blob/master/USAGE.md";
 
     private Informational() {
     }

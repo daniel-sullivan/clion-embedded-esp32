@@ -2,9 +2,9 @@
 
 #### **Did you find a bug?**
 
-* **Ensure the bug was not already reported** by searching on GitHub under [Issues](https://github.com/daniel-sullivan/clion-embedded-esp32/issues).
+* **Ensure the bug was not already reported** by searching on GitHub under [Issues](https://github.com/ThexXTURBOXx/clion-embedded-esp32/issues).
 
-* If you're unable to find an open issue addressing the problem, [open a new one](https://github.com/daniel-sullivan/clion-embedded-esp32/issues/new). Be sure to include a **title and clear description**, as much relevant information as possible, and a **code sample** or an **executable test case** demonstrating the expected behavior that is not occurring.
+* If you're unable to find an open issue addressing the problem, [open a new one](https://github.com/ThexXTURBOXx/clion-embedded-esp32/issues/new). Be sure to include a **title and clear description**, as much relevant information as possible, and a **code sample** or an **executable test case** demonstrating the expected behavior that is not occurring.
 
 * Please note your platform (linux, windows, mac), CLion version, OpenOCD version, STM32CubeMX version (if applicable), type of your MCU and/or development board 
 
@@ -20,11 +20,11 @@ See above. Please note that formatting fixes may merged, or may be rejected with
 
 #### **Do you intend to add a new feature or change an existing one?**
 
-* [Open an issue](https://github.com/daniel-sullivan/clion-embedded-esp32/issues/new) on GitHub, add `feature request` label to it.
+* [Open an issue](https://github.com/ThexXTURBOXx/clion-embedded-esp32/issues/new) on GitHub, add `feature request` label to it.
 
 #### **Do you have questions about the source code?**
 
-* [Open an issue](https://github.com/daniel-sullivan/clion-embedded-esp32/issues/new) on GitHub, add `question` label to it.
+* [Open an issue](https://github.com/ThexXTURBOXx/clion-embedded-esp32/issues/new) on GitHub, add `question` label to it.
 
 #### **Do you want to contribute to the documentation?**
 

@@ -1,6 +1,6 @@
 # OpenOCD + ESP32 Support for embedded development Changelog
 
-## [Unreleased]
+## [0.1.3]
 ### Changed
 - Migrate to Gradle
 

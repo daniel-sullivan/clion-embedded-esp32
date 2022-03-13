@@ -1,9 +1,8 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>esp32.embedded.clion.armsupport.prj</id>
+    <id>de.femtopedia.openocd</id>
     <name>OpenOCD + ESP32 Support for Embedded Development</name>
-    <vendor email="daniel.sullivan@reticulum.it" url="https://github.com/daniel-sullivan/clion-embedded-esp32">Daniel Sullivan (Reticulum IT)
-    </vendor>
+    <vendor email="nico.mexis@kabelmail.de" url="https://github.com/ThexXTURBOXx">Nico Mexis</vendor>
 
     <depends>com.intellij.modules.clion</depends>
 
