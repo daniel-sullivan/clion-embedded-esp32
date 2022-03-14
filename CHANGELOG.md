@@ -1,5 +1,13 @@
 # OpenOCD + ESP32 Support for embedded development Changelog
 
+## [0.1.5]
+### Added
+- Support for CLion 2022.1 EAP
+
+## [0.1.4]
+### Changed
+- Changed the icon
+
 ## [0.1.3]
 ### Changed
 - Migrate to Gradle
