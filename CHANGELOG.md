@@ -1,5 +1,9 @@
 # OpenOCD + ESP32 Support for embedded development Changelog
 
+## [0.1.6]
+### Fixed
+- Fixed support for CLion 2020.3 and 2021.1
+
 ## [0.1.5]
 ### Added
 - Support for CLion 2022.1 EAP
