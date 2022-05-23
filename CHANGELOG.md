@@ -1,5 +1,9 @@
 # OpenOCD + ESP32 Support for embedded development Changelog
 
+## [0.1.8]
+### Fixed
+- Updated to 2022.2 EAP
+
 ## [0.1.7]
 ### Fixed
 - Updated to 2022.1 EAP again
