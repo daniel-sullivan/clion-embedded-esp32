@@ -2,7 +2,7 @@ Purpose
 ===
 
 The plugin supports two different, almost unrelated features:
- * Downloading and debugging binaries onto MCU chips using [OpenOCD](http://openocd.org/)
+ * Downloading and debugging binaries onto MCU chips using [OpenOCD](https://openocd.org/)
 
 Disclaimer
 ===

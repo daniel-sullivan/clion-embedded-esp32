@@ -18,7 +18,7 @@ at [Jetbrains Repository](https://plugins.jetbrains.com/plugin/18760-openocd--es
 The plugin is able to:
 ---
 
-* Download project binaries via JTAG using *[OpenOCD](http://openocd.org/)*
+* Download project binaries via JTAG using *[OpenOCD](https://openocd.org/)*
 * Debug project on chip including support for initial breakpoints.
 
 Disclaimer
