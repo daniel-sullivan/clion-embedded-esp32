@@ -12,6 +12,7 @@ import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.HyperlinkAdapter;
 import javax.swing.event.HyperlinkEvent;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * (c) elmot on 20.10.2017.
@@ -58,13 +59,10 @@ public class Informational {
                 new String[]{Messages.getOkButton(), CommonBundle.settingsAction(), CommonBundle.getHelpButtonText()}
                 , 0, Messages.getErrorIcon());
         switch (optionNo) {
-        case 1:
-            ShowSettingsUtil.getInstance().showSettingsDialog(project, OpenOcdSettings.class);
-            break;
-        case 2:
-            BrowserUtil.browse(HELP_URL);
-            break;
-        default://nothing to do
+        case 1 -> ShowSettingsUtil.getInstance().showSettingsDialog(project, OpenOcdSettings.class);
+        case 2 -> BrowserUtil.browse(HELP_URL);
+        default -> {//nothing to do
+        }
         }
     }
 
@@ -76,7 +74,7 @@ public class Informational {
         }
 
         @Override
-        protected void hyperlinkActivated(HyperlinkEvent e) {
+        protected void hyperlinkActivated(@NotNull HyperlinkEvent e) {
              /*String link = Objects.toString(e.getDescription(), "");
             if (link.toLowerCase().startsWith(SETTINGS_PROTOCOL)) {
                 try {
