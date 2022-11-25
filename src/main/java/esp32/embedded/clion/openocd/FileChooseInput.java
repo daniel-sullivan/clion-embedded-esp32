@@ -244,8 +244,8 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
         }
 
         public String getPath() {
-            return Objects.requireNonNull(projectHome.findFileByRelativePath(getText())).getPath();
-//            return projectHome.getPath() + "/" + getText();
+//            return Objects.requireNonNull(projectHome.findFileByRelativePath(getText())).getPath();
+            return projectHome.getPath() + "/" + getText();
         }
 
         @Override

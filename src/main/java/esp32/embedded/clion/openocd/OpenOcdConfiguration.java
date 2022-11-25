@@ -91,7 +91,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     }
 
     public enum ProgramType {
-        PROGRAM,
+        PROGRAM_ESP,
         PROGRAM_ESP32;
 
         @Override

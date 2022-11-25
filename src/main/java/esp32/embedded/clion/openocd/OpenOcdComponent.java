@@ -95,8 +95,8 @@ public class OpenOcdComponent {
 
         commandLine.addParameters("-f", config.getBoardConfigFile());
 
-        commandLine.addParameters("-c", config.getProgramType().toString() + " " + config.getBootBinPath() + " " + config.getBootOffset());
-        commandLine.addParameters("-c", config.getProgramType().toString() + " " + config.getPartitionBinPath() + " " + config.getPartitionOffset());
+        commandLine.addParameters("-c", config.getProgramType().toString() + " " + config.getBootBinPath() + " " + config.getBootOffset() + " verify");
+        commandLine.addParameters("-c", config.getProgramType().toString() + " " + config.getPartitionBinPath() + " " + config.getPartitionOffset() + " verify");
 
         if (fileToLoad != null) { // Program Command
             String command =
@@ -104,6 +104,8 @@ public class OpenOcdComponent {
                             ".bin");
             if (config.getOffset() != null && !config.getOffset().isEmpty())
                 command = command + " " + config.getOffset();
+
+            command += " verify";
 
             commandLine.addParameters("-c", command);
         }
