@@ -23,9 +23,11 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.concurrency.FutureResult;
+
 import java.io.File;
 import java.util.Objects;
 import java.util.concurrent.Future;
+
 import org.jdesktop.swingx.util.OS;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -93,12 +95,17 @@ public class OpenOcdComponent {
 
         commandLine.addParameters("-f", config.getBoardConfigFile());
 
+        commandLine.addParameters("-c", config.getProgramType().toString() + " " + config.getBootBinPath() + " " + config.getBootOffset() + " verify");
+        commandLine.addParameters("-c", config.getProgramType().toString() + " " + config.getPartitionBinPath() + " " + config.getPartitionOffset() + " verify");
+
         if (fileToLoad != null) { // Program Command
             String command =
-                    "program_esp32 " + fileToLoad.getAbsolutePath().replace(File.separatorChar, '/').replace(".elf",
+                    config.getProgramType().toString() + " " + fileToLoad.getAbsolutePath().replace(File.separatorChar, '/').replace(".elf",
                             ".bin");
             if (config.getOffset() != null && !config.getOffset().isEmpty())
                 command = command + " " + config.getOffset();
+
+            command += " verify";
 
             commandLine.addParameters("-c", command);
         }

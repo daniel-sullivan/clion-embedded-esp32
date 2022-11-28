@@ -1,9 +1,13 @@
 package esp32.embedded.clion.openocd;
 
 import com.intellij.execution.ui.CommonProgramParametersPanel;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VfsUtilCore;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.intellij.ui.components.fields.IntegerField;
 import com.intellij.util.ui.GridBag;
@@ -11,6 +15,7 @@ import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration;
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfigurationSettingsEditor;
 import com.jetbrains.cidr.cpp.execution.CMakeBuildConfigurationHelper;
 import esp32.embedded.clion.openocd.OpenOcdConfiguration.DownloadType;
+import esp32.embedded.clion.openocd.OpenOcdConfiguration.ProgramType;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -32,8 +37,15 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
     private ExtendableTextField initialBreakpointName;
     private FileChooseInput boardConfigFile;
     private FileChooseInput interfaceConfigFile;
+
+    private FileChooseInput.BinFile bootloaderFile;
+    private ExtendableTextField bootloaderOffset;
+    private FileChooseInput.BinFile partitionTableFile;
+    private ExtendableTextField partitionTableOffset;
     private String openocdHome;
     private JXRadioGroup<DownloadType> downloadGroup;
+
+    private JXRadioGroup<ProgramType> programType;
 
 
     @SuppressWarnings("WeakerAccess")
@@ -54,18 +66,26 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         String interfaceConfig = interfaceConfigFile.getText().trim();
         ocdConfiguration.setInterfaceConfigFile(interfaceConfig.isEmpty() ? null : interfaceConfig);
 
+        String bootPath = bootloaderFile.getPath().trim();
+        ocdConfiguration.setBootBinPath(bootPath.isEmpty() ? null: bootPath);
+
+        String partPath = partitionTableFile.getPath().trim();
+        ocdConfiguration.setPartitionBinPath(partPath.isEmpty() ? null: partPath);
+
         gdbPort.validateContent();
         telnetPort.validateContent();
         ocdConfiguration.setGdbPort(gdbPort.getValue());
         ocdConfiguration.setTelnetPort(telnetPort.getValue());
         ocdConfiguration.setDownloadType(downloadGroup.getSelectedValue());
+        ocdConfiguration.setProgramType(programType.getSelectedValue());
 
         ocdConfiguration.setOffset(offset.getText());
+        ocdConfiguration.setBootOffset(bootloaderOffset.getText());
+        ocdConfiguration.setPartitionOffset(partitionTableOffset.getText());
         ocdConfiguration.setHAR(harCheck.isSelected());
         ocdConfiguration.setFlushRegs(flushRegsCheck.isSelected());
         ocdConfiguration.setInitialBreak(initialBreakpointCheck.isSelected());
         ocdConfiguration.setInitialBreakName(initialBreakpointName.getText());
-
     }
 
     @Override
@@ -79,12 +99,22 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         boardConfigFile.setText(ocd.getBoardConfigFile());
         interfaceConfigFile.setText(ocd.getInterfaceConfigFile());
 
+        String root = ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0]).getContentRoots()[0].getPath();
+        String bootBinPath = ocd.getBootBinPath().replaceAll(root+"/", "");
+        bootloaderFile.setText(bootBinPath);
+
+        String partitionPath = ocd.getPartitionBinPath().replaceAll(root+"/", "");
+        partitionTableFile.setText(partitionPath);
+
         gdbPort.setText("" + ocd.getGdbPort());
 
         telnetPort.setText("" + ocd.getTelnetPort());
         downloadGroup.setSelectedValue(ocd.getDownloadType());
+        programType.setSelectedValue(ocd.getProgramType());
 
         offset.setText(ocd.getOffset());
+        bootloaderOffset.setText(ocd.getBootOffset());
+        partitionTableOffset.setText(ocd.getPartitionOffset());
         harCheck.setSelected(ocd.getHAR());
         flushRegsCheck.setSelected(ocd.getFlushRegs());
         initialBreakpointCheck.setSelected(ocd.getInitialBreak());
@@ -112,6 +142,33 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
                 this::getOpenocdHome);
         panel.add(interfaceConfigFile, gridBag.next().coverLine());
 
+        VirtualFile contentRoot = ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0]).getContentRoots()[0];
+
+        JPanel bootloaderPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+        bootloaderPanel.add(new JLabel("Bootloader binary:"));
+        bootloaderFile = new FileChooseInput.BinFile("Bootloader file", VfsUtil.getUserHomeDir(), contentRoot);
+        bootloaderPanel.add(bootloaderFile);
+
+        bootloaderPanel.add(new JLabel("Bootloader offset:"));
+        bootloaderOffset = addOffsetInput(OpenOcdConfiguration.DEF_BOOT_OFFSET);
+        bootloaderPanel.add(bootloaderOffset);
+
+        panel.add(bootloaderPanel, gridBag.nextLine().next().coverLine());
+
+        JPanel partitionPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+        partitionPanel.add(new JLabel("Partition Table binary:"));
+        partitionTableFile = new FileChooseInput.BinFile("Partition Table file", VfsUtil.getUserHomeDir(), contentRoot);
+        partitionPanel.add(partitionTableFile);
+
+        partitionPanel.add(new JLabel("Partition Table offset:"));
+        partitionTableOffset = addOffsetInput(OpenOcdConfiguration.DEF_PART_OFFSET);
+        partitionPanel.add(partitionTableOffset);
+
+        panel.add(partitionPanel, gridBag.nextLine().next().coverLine());
+
+        panel.add(new JLabel("OpenOCD command:"), gridBag.nextLine().next());
+        programType = new JXRadioGroup<>(ProgramType.values());
+        panel.add(programType,gridBag.next().coverLine());
 
         JPanel portsPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 
