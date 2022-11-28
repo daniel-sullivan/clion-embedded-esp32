@@ -14,7 +14,6 @@ import org.jetbrains.annotations.Nullable;
 /**
  * (c) elmot on 21.10.2017.
  */
-@SuppressWarnings("WeakerAccess")
 @State(name = "elmot.OpenOcdPlugin")
 public class OpenOcdSettingsState implements PersistentStateComponent<OpenOcdSettingsState> {
 
@@ -77,7 +76,6 @@ public class OpenOcdSettingsState implements PersistentStateComponent<OpenOcdSet
         return "C:\\";
     }
 
-    @SuppressWarnings("SameParameterValue")
     @Nullable
     private File findExecutableInPath(String name) {
         if (SystemInfo.isWindows) {

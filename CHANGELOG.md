@@ -1,5 +1,11 @@
 # OpenOCD + ESP32 Support for embedded development Changelog
 
+## [0.2.0]
+### Added
+- Support for both `program_esp[32]` commands ([#3](https://github.com/ThexXTURBOXx/clion-embedded-esp32/pull/3))
+- Support for `offset` parameters ([#3](https://github.com/ThexXTURBOXx/clion-embedded-esp32/pull/3))
+- Support for `verify` parameter
+
 ## [0.1.9]
 ### Fixed
 - Updated to 2022.3 EAP

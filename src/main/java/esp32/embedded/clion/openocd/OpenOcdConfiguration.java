@@ -4,31 +4,25 @@ import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.openapi.Disposable;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VfsUtilCore;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration;
 import com.jetbrains.cidr.execution.CidrCommandLineState;
 import com.jetbrains.cidr.execution.CidrExecutableDataHolder;
+import java.util.Objects;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
-
 /**
  * (c) elmot on 29.9.2017.
  */
-@SuppressWarnings("WeakerAccess")
 public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements CidrExecutableDataHolder {
     public static final int DEF_GDB_PORT = 3333;
     public static final int DEF_TELNET_PORT = 4444;
+    public static final DownloadType DEF_DOWNLOAD_TYPE = DownloadType.ALWAYS;
     public static final String DEF_PROGRAM_OFFSET = "0x10000";
     public static final String DEF_BOOT_OFFSET = "0x0";
     public static final String DEF_BOOT_BIN_PATH = "build/bootloader/bootloader.bin";
@@ -41,6 +35,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     public static final String DEF_BREAK_FUNCTION_NAME = "app_main";
 
     public static final ProgramType DEF_PROGRAM_TYPE = ProgramType.PROGRAM_ESP32;
+    public static final boolean DEF_APPEND_VERIFY = true;
 
     private static final String ATTR_GDB_PORT = "gdb_port";
     private static final String ATTR_TELNET_PORT = "telnet_port";
@@ -58,13 +53,14 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     public static final String ATTR_BREAK_FUNCTION_NAME = "break_function";
 
     public static final String ATTR_PROGRAM_TYPE_CONFIG = "prog_type_cfg";
+    public static final String ATTR_APPEND_VERIFY_CONFIG = "app_verify_cfg";
 
 
     private int gdbPort = DEF_GDB_PORT;
     private int telnetPort = DEF_TELNET_PORT;
     private String boardConfigFile;
     private String interfaceConfigFile;
-    private DownloadType downloadType = DownloadType.ALWAYS;
+    private DownloadType downloadType = DEF_DOWNLOAD_TYPE;
     private String offset = DEF_PROGRAM_OFFSET;
     private boolean haltOnReset = DEF_HAR;
     private boolean flushRegs = DEF_FLUSH_REGS;
@@ -76,7 +72,8 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     private String partitionOffset = DEF_PART_OFFSET;
     private String partitionBinPath = DEF_PART_BIN_PATH;
 
-    private ProgramType programType = ProgramType.PROGRAM_ESP32;
+    private ProgramType programType = DEF_PROGRAM_TYPE;
+    private boolean appendVerify = DEF_APPEND_VERIFY;
 
     public enum DownloadType {
 
@@ -127,7 +124,6 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
 
     }
 
-    @SuppressWarnings("WeakerAccess")
     public OpenOcdConfiguration(Project project, ConfigurationFactory configurationFactory, String targetName) {
         super(project, configurationFactory, targetName);
     }
@@ -159,6 +155,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
 
         String programTypeStr = element.getAttributeValue(ATTR_PROGRAM_TYPE_CONFIG);
         programType = programTypeStr != null ? ProgramType.valueOf(programTypeStr) : DEF_PROGRAM_TYPE;
+        appendVerify = readBoolAttr(element, ATTR_APPEND_VERIFY_CONFIG, DEF_APPEND_VERIFY);
     }
 
     private int readIntAttr(@NotNull Element element, String name, int def) {
@@ -216,6 +213,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         element.setAttribute(ATTR_PART_OFFSET_CONFIG, Objects.requireNonNullElse(partitionOffset, DEF_PART_OFFSET));
 
         element.setAttribute(ATTR_PROGRAM_TYPE_CONFIG, programType.name());
+        element.setAttribute(ATTR_APPEND_VERIFY_CONFIG, String.valueOf(appendVerify));
     }
 
     @Override
@@ -356,4 +354,13 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     public void setProgramType(ProgramType programType) {
         this.programType = programType;
     }
+
+    public boolean getAppendVerify() {
+        return appendVerify;
+    }
+
+    public void setAppendVerify(boolean appendVerify) {
+        this.appendVerify = appendVerify;
+    }
+
 }

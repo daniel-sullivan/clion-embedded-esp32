@@ -32,7 +32,6 @@ import static com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW;
 /**
  * (c) elmot on 20.10.2017.
  */
-@SuppressWarnings("WeakerAccess")
 public class OpenOcdSettings implements ProjectComponent, Configurable {
     protected final Project project;
     private OpenOcdSettingsPanel panel = null;
@@ -144,7 +143,6 @@ public class OpenOcdSettings implements ProjectComponent, Configurable {
             }
         }
 
-        @SuppressWarnings("SameParameterValue")
         private <T extends FileChooseInput> T addValueRow(int row, @NotNull T component) {
             return addValueRow(row, component.getValueName(), component);
         }

@@ -12,10 +12,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.components.fields.valueEditors.TextFieldValueEditor;
-
-import java.util.Objects;
 import java.util.function.Supplier;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -244,7 +241,7 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
         }
 
         public String getPath() {
-//            return Objects.requireNonNull(projectHome.findFileByRelativePath(getText())).getPath();
+            // return Objects.requireNonNull(projectHome.findFileByRelativePath(getText())).getPath();
             return projectHome.getPath() + "/" + getText();
         }
 
@@ -308,7 +305,7 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
 
     // Might be used in future
     public static class ExeFile extends FileChooseInput {
-        @SuppressWarnings("WeakerAccess")
+
         public ExeFile(String valueName, VirtualFile defValue) {
             super(valueName, defValue);
         }
@@ -330,7 +327,7 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
     }
 
     public static class OpenOcdHome extends FileChooseInput {
-        @SuppressWarnings("WeakerAccess")
+
         public OpenOcdHome(String valueName, VirtualFile defValue) {
             super(valueName, defValue);
         }

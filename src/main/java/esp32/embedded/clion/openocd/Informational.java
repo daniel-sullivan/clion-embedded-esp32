@@ -17,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 /**
  * (c) elmot on 20.10.2017.
  */
-@SuppressWarnings("WeakerAccess")
 public class Informational {
     public static final String SETTINGS_PROTOCOL = "settings://";
     public static final String HELP_URL = "https://github.com/ThexXTURBOXx/clion-embedded-esp32/blob/master/USAGE.md";
@@ -25,7 +24,6 @@ public class Informational {
     private Informational() {
     }
 
-    @SuppressWarnings("WeakerAccess")
     public static void showSuccessfulDownloadNotification(Project project) {
         showMessage(project, MessageType.INFO, "Firmware Download Success");
     }
@@ -44,7 +42,6 @@ public class Informational {
         );
     }
 
-    @SuppressWarnings("WeakerAccess")
     public static void showFailedDownloadNotification(Project project) {
         showMessage(project, MessageType.ERROR,
                 "MCU Communication FAILURE.\nCheck <a href=\"" +

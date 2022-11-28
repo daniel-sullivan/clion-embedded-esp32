@@ -23,22 +23,17 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.concurrency.FutureResult;
-
 import java.io.File;
 import java.util.Objects;
 import java.util.concurrent.Future;
-
 import org.jdesktop.swingx.util.OS;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class OpenOcdComponent {
 
-    @SuppressWarnings("WeakerAccess")
     public static final String SCRIPTS_PATH_SHORT = "scripts";
-    @SuppressWarnings("WeakerAccess")
     public static final String SCRIPTS_PATH_LONG = "share/openocd/" + SCRIPTS_PATH_SHORT;
-    @SuppressWarnings("WeakerAccess")
     public static final String BIN_OPENOCD;
     private static final Key<Long> UPLOAD_LOAD_COUNT_KEY = new Key<>(OpenOcdConfiguration.class.getName() +
             "#LAST_DOWNLOAD_MOD_COUNT");
@@ -64,7 +59,6 @@ public class OpenOcdComponent {
         myColorsScheme = EditorColorsManager.getInstance().getGlobalScheme();
     }
 
-    @SuppressWarnings("WeakerAccess")
     @NotNull
     public static GeneralCommandLine createOcdCommandLine(OpenOcdConfiguration config, File fileToLoad,
                                                           @Nullable String additionalCommand, boolean shutdown) throws ConfigurationException {
@@ -95,17 +89,22 @@ public class OpenOcdComponent {
 
         commandLine.addParameters("-f", config.getBoardConfigFile());
 
-        commandLine.addParameters("-c", config.getProgramType().toString() + " " + config.getBootBinPath() + " " + config.getBootOffset() + " verify");
-        commandLine.addParameters("-c", config.getProgramType().toString() + " " + config.getPartitionBinPath() + " " + config.getPartitionOffset() + " verify");
+        commandLine.addParameters("-c", config.getProgramType().toString() + " " + config.getBootBinPath() + " "
+                + config.getBootOffset() + (config.getAppendVerify() ? " verify" : ""));
+        commandLine.addParameters("-c", config.getProgramType().toString() + " " + config.getPartitionBinPath() + " "
+                + config.getPartitionOffset() + (config.getAppendVerify() ? " verify" : ""));
 
         if (fileToLoad != null) { // Program Command
             String command =
-                    config.getProgramType().toString() + " " + fileToLoad.getAbsolutePath().replace(File.separatorChar, '/').replace(".elf",
-                            ".bin");
+                    config.getProgramType().toString() + " " + fileToLoad.getAbsolutePath()
+                            .replace(File.separatorChar, '/')
+                            .replace(".elf", ".bin");
             if (config.getOffset() != null && !config.getOffset().isEmpty())
                 command = command + " " + config.getOffset();
 
-            command += " verify";
+            if (config.getAppendVerify()) {
+                command += " verify";
+            }
 
             commandLine.addParameters("-c", command);
         }
@@ -134,7 +133,6 @@ public class OpenOcdComponent {
         throw new ConfigurationException("Please open settings dialog and fix OpenOCD home", "OpenOCD Config Error");
     }
 
-    @SuppressWarnings("WeakerAccess")
     public void stopOpenOcd() {
         if (process == null || process.isProcessTerminated() || process.isProcessTerminating())
             return;
@@ -144,7 +142,6 @@ public class OpenOcdComponent {
         });
     }
 
-    @SuppressWarnings("WeakerAccess")
     public Future<STATUS> startOpenOcd(OpenOcdConfiguration config, @Nullable File fileToLoad) throws ConfigurationException {
         if (config == null) return new FutureResult<>(STATUS.FLASH_ERROR);
         GeneralCommandLine commandLine = createOcdCommandLine(config, fileToLoad, null, false);
@@ -281,10 +278,10 @@ public class OpenOcdComponent {
 
     }
 
-    @SuppressWarnings("WeakerAccess")
     public static boolean isLatestUploaded(File runFile) {
         VirtualFile vRunFile = VfsUtil.findFileByIoFile(runFile, true);
         Long latestDownloadModCount = UPLOAD_LOAD_COUNT_KEY.get(vRunFile);
         return vRunFile != null && Objects.equals(latestDownloadModCount, vRunFile.getModificationCount());
     }
+
 }

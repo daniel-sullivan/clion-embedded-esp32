@@ -6,7 +6,6 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.intellij.ui.components.fields.IntegerField;
@@ -46,9 +45,9 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
     private JXRadioGroup<DownloadType> downloadGroup;
 
     private JXRadioGroup<ProgramType> programType;
+    private JCheckBox appendVerify;
 
 
-    @SuppressWarnings("WeakerAccess")
     public OpenOcdConfigurationEditor(Project project,
                                       @NotNull CMakeBuildConfigurationHelper cMakeBuildConfigurationHelper) {
         super(project, cMakeBuildConfigurationHelper);
@@ -67,10 +66,10 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         ocdConfiguration.setInterfaceConfigFile(interfaceConfig.isEmpty() ? null : interfaceConfig);
 
         String bootPath = bootloaderFile.getPath().trim();
-        ocdConfiguration.setBootBinPath(bootPath.isEmpty() ? null: bootPath);
+        ocdConfiguration.setBootBinPath(bootPath.isEmpty() ? null : bootPath);
 
         String partPath = partitionTableFile.getPath().trim();
-        ocdConfiguration.setPartitionBinPath(partPath.isEmpty() ? null: partPath);
+        ocdConfiguration.setPartitionBinPath(partPath.isEmpty() ? null : partPath);
 
         gdbPort.validateContent();
         telnetPort.validateContent();
@@ -78,6 +77,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         ocdConfiguration.setTelnetPort(telnetPort.getValue());
         ocdConfiguration.setDownloadType(downloadGroup.getSelectedValue());
         ocdConfiguration.setProgramType(programType.getSelectedValue());
+        ocdConfiguration.setAppendVerify(appendVerify.isSelected());
 
         ocdConfiguration.setOffset(offset.getText());
         ocdConfiguration.setBootOffset(bootloaderOffset.getText());
@@ -99,11 +99,12 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         boardConfigFile.setText(ocd.getBoardConfigFile());
         interfaceConfigFile.setText(ocd.getInterfaceConfigFile());
 
-        String root = ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0]).getContentRoots()[0].getPath();
-        String bootBinPath = ocd.getBootBinPath().replaceAll(root+"/", "");
+        String root =
+                ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0]).getContentRoots()[0].getPath();
+        String bootBinPath = ocd.getBootBinPath().replaceAll(root + "/", "");
         bootloaderFile.setText(bootBinPath);
 
-        String partitionPath = ocd.getPartitionBinPath().replaceAll(root+"/", "");
+        String partitionPath = ocd.getPartitionBinPath().replaceAll(root + "/", "");
         partitionTableFile.setText(partitionPath);
 
         gdbPort.setText("" + ocd.getGdbPort());
@@ -111,6 +112,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         telnetPort.setText("" + ocd.getTelnetPort());
         downloadGroup.setSelectedValue(ocd.getDownloadType());
         programType.setSelectedValue(ocd.getProgramType());
+        appendVerify.setSelected(ocd.getAppendVerify());
 
         offset.setText(ocd.getOffset());
         bootloaderOffset.setText(ocd.getBootOffset());
@@ -142,7 +144,8 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
                 this::getOpenocdHome);
         panel.add(interfaceConfigFile, gridBag.next().coverLine());
 
-        VirtualFile contentRoot = ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0]).getContentRoots()[0];
+        VirtualFile contentRoot =
+                ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0]).getContentRoots()[0];
 
         JPanel bootloaderPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
         bootloaderPanel.add(new JLabel("Bootloader binary:"));
@@ -168,7 +171,10 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
         panel.add(new JLabel("OpenOCD command:"), gridBag.nextLine().next());
         programType = new JXRadioGroup<>(ProgramType.values());
-        panel.add(programType,gridBag.next().coverLine());
+        panel.add(programType, gridBag.next().coverLine());
+
+        appendVerify = new JCheckBox("Append verify parameter", OpenOcdConfiguration.DEF_APPEND_VERIFY);
+        panel.add(appendVerify, gridBag.nextLine().next());
 
         JPanel portsPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 
