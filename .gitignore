@@ -1,8 +1,5 @@
-out
-community.*
-cubemx-clion.jar
-.idea/workspace.xml
-.idea/shelf
-.idea/dictionaries/
-.idea/uiDesigner.xml
-clion-embedded-esp32.jar
+.gradle
+.idea/
+.qodana
+build
+release\.properties

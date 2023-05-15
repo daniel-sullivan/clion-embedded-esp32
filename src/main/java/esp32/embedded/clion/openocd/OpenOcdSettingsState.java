@@ -1,23 +1,19 @@
 package esp32.embedded.clion.openocd;
 
 import com.intellij.execution.configurations.PathEnvironmentVariableUtil;
-import com.intellij.openapi.components.*;
+import com.intellij.openapi.components.PersistentStateComponent;
+import com.intellij.openapi.components.State;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import java.io.File;
 import org.jdesktop.swingx.util.OS;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-
-import static esp32.embedded.clion.openocd.OpenOcdComponent.SCRIPTS_PATH_LONG;
-import static esp32.embedded.clion.openocd.OpenOcdComponent.SCRIPTS_PATH_SHORT;
-
 /**
  * (c) elmot on 21.10.2017.
  */
-@SuppressWarnings("WeakerAccess")
 @State(name = "elmot.OpenOcdPlugin")
 public class OpenOcdSettingsState implements PersistentStateComponent<OpenOcdSettingsState> {
 
@@ -72,16 +68,14 @@ public class OpenOcdSettingsState implements PersistentStateComponent<OpenOcdSet
 
     @NotNull
     protected String defOpenOcdLocation() {
-
-        if(! OS.isWindows()) return "/usr";
+        if (!OS.isWindows()) return "/usr";
         VirtualFile defDir = VfsUtil.getUserHomeDir();
-        if(defDir != null) {
+        if (defDir != null) {
             return defDir.getPath();
         }
         return "C:\\";
     }
 
-    @SuppressWarnings("SameParameterValue")
     @Nullable
     private File findExecutableInPath(String name) {
         if (SystemInfo.isWindows) {

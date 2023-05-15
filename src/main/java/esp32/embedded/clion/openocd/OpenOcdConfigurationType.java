@@ -3,14 +3,13 @@ package esp32.embedded.clion.openocd;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunConfigurationSingletonPolicy;
-import com.intellij.icons.AllIcons;
+import com.intellij.ide.ui.ProductIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.jetbrains.cidr.cpp.execution.CMakeRunConfigurationType;
+import javax.swing.Icon;
 import org.jetbrains.annotations.NotNull;
-
-import javax.swing.*;
 
 /**
  * (c) elmot on 29.9.2017.
@@ -19,20 +18,13 @@ public class OpenOcdConfigurationType extends CMakeRunConfigurationType {
 
     private static final String FACTORY_ID = "elmot.embedded.openocd.conf.factory";
     public static final String TYPE_ID = "elmot.embedded.openocd.conf.type";
-    public static final NotNullLazyValue<Icon> ICON = new NotNullLazyValue<Icon>() {
-
-        @NotNull
-        @Override
-        protected Icon compute() {
-            final Icon icon = IconLoader.findIcon("ocd_run.png", OpenOcdConfigurationType.class);
-            return icon == null ? AllIcons.Icon : icon;
-        }
-
-    };
+    public static final NotNullLazyValue<Icon> ICON = NotNullLazyValue.lazy(() -> {
+        final Icon icon = IconLoader.findIcon("ocd_run.png", OpenOcdConfigurationType.class);
+        return icon == null ? ProductIcons.getInstance().getProductIcon() : icon;
+    });
     private final ConfigurationFactory factory;
 
     public OpenOcdConfigurationType() {
-        //noinspection ConstantConditions
         super(TYPE_ID,
                 FACTORY_ID,
                 "OpenOCD Download & Run",

@@ -12,15 +12,15 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.components.fields.valueEditors.TextFieldValueEditor;
+import java.util.function.Supplier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.function.Supplier;
 
 public abstract class FileChooseInput extends TextFieldWithBrowseButton {
 
     public static final String BOARD_FOLDER = "board";
     public static final String INTERFACE_FOLDER = "interface";
+    public static final String BIN_FOLDER = "bin";
     protected final TextFieldValueEditor<VirtualFile> editor;
     private final FileChooserDescriptor fileDescriptor;
 
@@ -33,13 +33,13 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
         addActionListener(e -> {
             VirtualFile virtualFile = null;
             String text = getTextField().getText();
-            if(text != null && !text.isEmpty())
-            try {
-                virtualFile = parseTextToFile(text);
-            } catch (InvalidDataException ignored) {
-                virtualFile = LocalFileSystem.getInstance().findFileByPath(text);
-            }
-            if(virtualFile == null) {
+            if (text != null && !text.isEmpty())
+                try {
+                    virtualFile = parseTextToFile(text);
+                } catch (InvalidDataException ignored) {
+                    virtualFile = LocalFileSystem.getInstance().findFileByPath(text);
+                }
+            if (virtualFile == null) {
                 virtualFile = getDefaultLocation();
             }
             VirtualFile chosenFile = FileChooser.chooseFile(fileDescriptor, null, virtualFile);
@@ -231,10 +231,81 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
 
     }
 
-    @SuppressWarnings("unused")
+    public static class BinFile extends FileChooseInput {
+
+        private final VirtualFile projectHome;
+
+        public BinFile(String valueName, VirtualFile defValue, VirtualFile projectHome) {
+            super(valueName, defValue);
+            this.projectHome = projectHome;
+        }
+
+        public String getPath() {
+            // return Objects.requireNonNull(projectHome.findFileByRelativePath(getText())).getPath();
+            return projectHome.getPath() + "/" + getText();
+        }
+
+        @Override
+        protected VirtualFile getDefaultLocation() {
+            if (projectHome != null) {
+                VirtualFile bin = projectHome.findFileByRelativePath(BIN_FOLDER);
+                if (bin != null) {
+                    return bin;
+                }
+            }
+            return super.getDefaultLocation();
+        }
+
+        @NotNull
+        @Override
+        protected VirtualFile parseTextToFile(@Nullable String text) {
+            VirtualFile file;
+            if (text == null) {
+                file = editor.getDefaultValue();
+            } else {
+                file = LocalFileSystem.getInstance().findFileByPath(text);
+                if (file == null) {
+                    if (projectHome != null) {
+                        file = projectHome.findFileByRelativePath(text);
+                    }
+                }
+            }
+            if (file == null || !validateFile(file)) {
+                throw new InvalidDataException("is invalid");
+            }
+            return file;
+        }
+
+        @Override
+        protected boolean validateFile(VirtualFile virtualFile) {
+            return virtualFile.exists() && !virtualFile.isDirectory();
+        }
+
+        @Override
+        protected FileChooserDescriptor createFileChooserDescriptor() {
+            if (SystemInfo.isWindows) {
+                return FileChooserDescriptorFactory.createSingleFileDescriptor("bin");
+            } else {
+                return FileChooserDescriptorFactory.createSingleLocalFileDescriptor();
+            }
+        }
+
+        @Override
+        protected String fileToTextValue(VirtualFile file) {
+            String completeFileName = super.fileToTextValue(file);
+            if (projectHome != null) {
+                String relativePath = VfsUtil.getRelativePath(file, projectHome);
+                if (relativePath != null) {
+                    return relativePath;
+                }
+            }
+            return completeFileName;
+        }
+    }
+
     // Might be used in future
     public static class ExeFile extends FileChooseInput {
-        @SuppressWarnings("WeakerAccess")
+
         public ExeFile(String valueName, VirtualFile defValue) {
             super(valueName, defValue);
         }
@@ -256,7 +327,7 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
     }
 
     public static class OpenOcdHome extends FileChooseInput {
-        @SuppressWarnings("WeakerAccess")
+
         public OpenOcdHome(String valueName, VirtualFile defValue) {
             super(valueName, defValue);
         }
@@ -268,7 +339,7 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
             if (openOcdBinary == null || openOcdBinary.isDirectory()
                     || !VfsUtil.virtualToIoFile(openOcdBinary).canExecute()) return false;
             VirtualFile ocdScripts = OpenOcdSettingsState.findOcdScripts(virtualFile);
-            if(ocdScripts!=null) {
+            if (ocdScripts != null) {
                 VirtualFile ocdBoard = ocdScripts.findFileByRelativePath(BOARD_FOLDER);
                 return ocdBoard != null && ocdBoard.isDirectory();
             }

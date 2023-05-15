@@ -1,0 +1,30 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <id>de.femtopedia.openocd</id>
+    <name>OpenOCD + ESP32 Support for Embedded Development</name>
+    <vendor email="nico.mexis@kabelmail.de" url="https://github.com/ThexXTURBOXx">Nico Mexis</vendor>
+
+    <depends>com.intellij.modules.clion</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <configurationType implementation="esp32.embedded.clion.openocd.OpenOcdConfigurationType"
+                           id="esp32.embedded.openocd.conf.type"/>
+        <projectConfigurable order="last" id="esp32.embedded.config"
+                             instance="esp32.embedded.clion.openocd.OpenOcdSettings"
+                             displayName="OpenOCD Support" groupId="build"/>
+    </extensions>
+
+    <project-components>
+        <component>
+            <loadForDefaultProject>true</loadForDefaultProject>
+            <implementation-class>esp32.embedded.clion.openocd.OpenOcdSettingsState</implementation-class>
+        </component>
+        <component>
+            <implementation-class>esp32.embedded.clion.openocd.OpenOcdSettings</implementation-class>
+        </component>
+        <component>
+            <implementation-class>esp32.embedded.clion.openocd.OpenOcdComponent</implementation-class>
+        </component>
+    </project-components>
+
+</idea-plugin>

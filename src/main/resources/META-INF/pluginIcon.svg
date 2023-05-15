@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" xmlns="http://www.w3.org/2000/svg">
+ <g fill="none" stroke="#000">
+  <rect x="1.726" y="1.7322" width="13.528" height="13.516" stroke-linecap="round" stroke-linejoin="round" stroke-width=".50707"/>
+  <g stroke-width=".52309px">
+   <path d="m3.425 0.50732v2.4697"/>
+   <path d="m5.116 0.50732v2.4697"/>
+   <path d="m6.807 0.50732v2.4697"/>
+   <path d="m8.498 0.50732v2.4697"/>
+   <path d="m10.189 0.5v2.4697"/>
+   <path d="m11.88 0.5v2.4697"/>
+   <path d="m13.571 0.50732v2.4697"/>
+   <path d="m3.425 14.03v2.4697"/>
+   <path d="m5.116 14.03v2.4697"/>
+   <path d="m6.807 14.03v2.4697"/>
+   <path d="m8.498 14.03v2.4697"/>
+   <path d="m10.189 14.023v2.4697"/>
+   <path d="m11.88 14.023v2.4697"/>
+   <path d="m13.571 14.03v2.4697"/>
+   <path d="m16.5 3.4296h-2.472"/>
+   <path d="m16.5 5.1191h-2.472"/>
+   <path d="m16.5 6.8086h-2.472"/>
+   <path d="m16.5 8.498h-2.472"/>
+   <path d="m16.5 10.187h-2.472"/>
+   <path d="m16.5 11.877h-2.472"/>
+   <path d="m16.5 13.566h-2.472"/>
+   <path d="m2.972 3.4296h-2.472"/>
+   <path d="m2.972 5.1191h-2.472"/>
+   <path d="m2.972 6.8086h-2.472"/>
+   <path d="m2.972 8.498h-2.472"/>
+   <path d="m2.972 10.187h-2.472"/>
+   <path d="m2.972 11.877h-2.472"/>
+   <path d="m2.972 13.566h-2.472"/>
+  </g>
+ </g>
+ <text transform="scale(1.0005 .99954)" x="8.5334044" y="6.9369421" fill="#000000" font-family="'Courier New'" font-size="4.7702px" font-weight="bold" letter-spacing="0px" stroke-width=".44721" text-align="center" text-anchor="middle" word-spacing="0px" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal;line-height:1.25" xml:space="preserve"><tspan x="8.5334044" y="6.9369421" text-align="center" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal">ESP</tspan><tspan x="8.5334044" y="12.899693" text-align="center" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal">32</tspan></text>
+</svg>

@@ -23,23 +23,20 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.concurrency.FutureResult;
+import java.io.File;
+import java.util.Objects;
+import java.util.concurrent.Future;
 import org.jdesktop.swingx.util.OS;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.util.Objects;
-import java.util.concurrent.Future;
-
 public class OpenOcdComponent {
 
-    @SuppressWarnings("WeakerAccess")
     public static final String SCRIPTS_PATH_SHORT = "scripts";
-    @SuppressWarnings("WeakerAccess")
     public static final String SCRIPTS_PATH_LONG = "share/openocd/" + SCRIPTS_PATH_SHORT;
-    @SuppressWarnings("WeakerAccess")
     public static final String BIN_OPENOCD;
-    private static final Key<Long> UPLOAD_LOAD_COUNT_KEY = new Key<>(OpenOcdConfiguration.class.getName() + "#LAST_DOWNLOAD_MOD_COUNT");
+    private static final Key<Long> UPLOAD_LOAD_COUNT_KEY = new Key<>(OpenOcdConfiguration.class.getName() +
+            "#LAST_DOWNLOAD_MOD_COUNT");
     private static final String ERROR_PREFIX = "Error: ";
     private static final String[] IGNORED_STRINGS = {
             "clearing lockup after double fault",
@@ -62,13 +59,13 @@ public class OpenOcdComponent {
         myColorsScheme = EditorColorsManager.getInstance().getGlobalScheme();
     }
 
-    @SuppressWarnings("WeakerAccess")
     @NotNull
-    public static GeneralCommandLine createOcdCommandLine(OpenOcdConfiguration config, File fileToLoad, @Nullable String additionalCommand, boolean shutdown) throws ConfigurationException {
+    public static GeneralCommandLine createOcdCommandLine(OpenOcdConfiguration config, File fileToLoad,
+                                                          @Nullable String additionalCommand, boolean shutdown) throws ConfigurationException {
         Project project = config.getProject();
         OpenOcdSettingsState ocdSettings = project.getComponent(OpenOcdSettingsState.class);
         if (StringUtil.isEmpty(config.getBoardConfigFile())) {
-            throw new ConfigurationException("Board Config file is not defined.", "OpenOCD run error");
+            throw new ConfigurationException("Board Config file is not defined.", "OpenOCD Run Error");
         }
         VirtualFile ocdHome = require(LocalFileSystem.getInstance().findFileByPath(ocdSettings.openOcdHome));
         VirtualFile ocdBinary = require(ocdHome.findFileByRelativePath(BIN_OPENOCD));
@@ -92,10 +89,22 @@ public class OpenOcdComponent {
 
         commandLine.addParameters("-f", config.getBoardConfigFile());
 
+        commandLine.addParameters("-c", config.getProgramType().toString() + " " + config.getBootBinPath() + " "
+                + config.getBootOffset() + (config.getAppendVerify() ? " verify" : ""));
+        commandLine.addParameters("-c", config.getProgramType().toString() + " " + config.getPartitionBinPath() + " "
+                + config.getPartitionOffset() + (config.getAppendVerify() ? " verify" : ""));
+
         if (fileToLoad != null) { // Program Command
-            String command = "program_esp32 " + fileToLoad.getAbsolutePath().replace(File.separatorChar, '/').replace(".elf", ".bin");
+            String command =
+                    config.getProgramType().toString() + " " + fileToLoad.getAbsolutePath()
+                            .replace(File.separatorChar, '/')
+                            .replace(".elf", ".bin");
             if (config.getOffset() != null && !config.getOffset().isEmpty())
                 command = command + " " + config.getOffset();
+
+            if (config.getAppendVerify()) {
+                command += " verify";
+            }
 
             commandLine.addParameters("-c", command);
         }
@@ -121,10 +130,9 @@ public class OpenOcdComponent {
     }
 
     private static void openOcdNotFound() throws ConfigurationException {
-        throw new ConfigurationException("Please open settings dialog and fix OpenOCD home", "OpenOCD config error");
+        throw new ConfigurationException("Please open settings dialog and fix OpenOCD home", "OpenOCD Config Error");
     }
 
-    @SuppressWarnings("WeakerAccess")
     public void stopOpenOcd() {
         if (process == null || process.isProcessTerminated() || process.isProcessTerminating())
             return;
@@ -134,7 +142,6 @@ public class OpenOcdComponent {
         });
     }
 
-    @SuppressWarnings("WeakerAccess")
     public Future<STATUS> startOpenOcd(OpenOcdConfiguration config, @Nullable File fileToLoad) throws ConfigurationException {
         if (config == null) return new FutureResult<>(STATUS.FLASH_ERROR);
         GeneralCommandLine commandLine = createOcdCommandLine(config, fileToLoad, null, false);
@@ -154,7 +161,7 @@ public class OpenOcdComponent {
             DownloadFollower downloadFollower = new DownloadFollower(virtualFile);
             process.addProcessListener(downloadFollower);
             RunContentExecutor openOCDConsole = new RunContentExecutor(project, process)
-                    .withTitle("OpenOCD console")
+                    .withTitle("OpenOCD Console")
                     .withActivateToolWindow(true)
                     .withFilter(new ErrorFilter(project))
                     .withStop(process::destroyProcess,
@@ -163,7 +170,7 @@ public class OpenOcdComponent {
             openOCDConsole.run();
             return downloadFollower;
         } catch (ExecutionException e) {
-            ExecutionErrorDialog.show(e, "OpenOCD start failed", project);
+            ExecutionErrorDialog.show(e, "OpenOCD Start Failed", project);
             return new FutureResult<>(STATUS.FLASH_ERROR);
         }
     }
@@ -191,7 +198,7 @@ public class OpenOcdComponent {
          */
         @Nullable
         @Override
-        public Result applyFilter(String line, int entireLength) {
+        public Result applyFilter(@NotNull String line, int entireLength) {
             if (containsOneOf(line, FAIL_STRINGS)) {
                 Informational.showFailedDownloadNotification(project);
                 return new Result(0, line.length(), null,
@@ -271,10 +278,10 @@ public class OpenOcdComponent {
 
     }
 
-    @SuppressWarnings("WeakerAccess")
     public static boolean isLatestUploaded(File runFile) {
         VirtualFile vRunFile = VfsUtil.findFileByIoFile(runFile, true);
         Long latestDownloadModCount = UPLOAD_LOAD_COUNT_KEY.get(vRunFile);
         return vRunFile != null && Objects.equals(latestDownloadModCount, vRunFile.getModificationCount());
     }
+
 }
