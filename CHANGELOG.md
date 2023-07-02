@@ -6,6 +6,10 @@
 
 ### Fixed
 - Fix file path parameter ([#6](https://github.com/ThexXTURBOXx/clion-embedded-esp32/issues/6))
+- Fix icons
+- Add ESP32 tag to run configurations to differentiate them better
+- Change default command to `program_esp`
+- Support new xpack OpenOCD format
 - Fix changelog
 
 ## 0.2.2
