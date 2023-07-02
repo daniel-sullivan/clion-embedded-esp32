@@ -121,7 +121,8 @@ class OpenOcdLauncher extends CidrLauncher {
         });
 
         debugProcess.getProcessHandler().putUserData(RESTART_KEY,
-                new AnAction("Reset", "MCU reset", IconLoader.findIcon("reset.png", OpenOcdLauncher.class)) {
+                new AnAction("Reset", "MCU reset",
+                        IconLoader.findIcon("esp32/embedded/clion/openocd/reset.png", OpenOcdLauncher.class)) {
                     @Override
                     public void actionPerformed(@NotNull AnActionEvent e) {
                         XDebugSession session = debugProcess.getSession();
