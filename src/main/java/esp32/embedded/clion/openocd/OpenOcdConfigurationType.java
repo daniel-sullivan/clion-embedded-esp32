@@ -27,7 +27,7 @@ public class OpenOcdConfigurationType extends CMakeRunConfigurationType {
     public OpenOcdConfigurationType() {
         super(TYPE_ID,
                 FACTORY_ID,
-                "OpenOCD Download & Run",
+                "OpenOCD Download & Run (ESP32)",
                 "Downloads and Runs Embedded Applications using OpenOCD",
                 ICON
         );
