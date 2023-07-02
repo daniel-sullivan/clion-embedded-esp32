@@ -1,3 +1,4 @@
+import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import java.io.FileInputStream
 import java.util.*
@@ -8,9 +9,9 @@ plugins {
     // Java support
     id("java")
     // Gradle IntelliJ Plugin
-    id("org.jetbrains.intellij") version "1.13.3"
+    id("org.jetbrains.intellij") version "1.14.2"
     // Gradle Changelog Plugin
-    id("org.jetbrains.changelog") version "2.0.0"
+    id("org.jetbrains.changelog") version "2.1.0"
     // Gradle Qodana Plugin
     id("org.jetbrains.qodana") version "0.1.13"
 }
@@ -89,9 +90,9 @@ tasks {
 
 // Get the latest available change notes from the changelog file
         changeNotes.set(provider {
-            changelog.run {
-                getOrNull(properties("pluginVersion")) ?: getLatest()
-            }.toHTML()
+            changelog.renderItem(
+                changelog.getOrNull(properties("pluginVersion")) ?: changelog.getLatest(), Changelog.OutputType.HTML
+            )
         })
     }
 

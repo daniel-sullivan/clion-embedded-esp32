@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 0.2.3
+
+### Fixed
+- Fix file path parameter ([#6](https://github.com/ThexXTURBOXx/clion-embedded-esp32/issues/6))
+- Fix changelog
+
+## 0.2.2
+
+### Fixed
+- Updated to 2023.2 EAP
+
 ## 0.2.1
 
 ### Fixed
