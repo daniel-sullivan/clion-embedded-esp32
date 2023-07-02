@@ -34,7 +34,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     public static final boolean DEF_BREAK_FUNCTION = true;
     public static final String DEF_BREAK_FUNCTION_NAME = "app_main";
 
-    public static final ProgramType DEF_PROGRAM_TYPE = ProgramType.PROGRAM_ESP32;
+    public static final ProgramType DEF_PROGRAM_TYPE = ProgramType.PROGRAM_ESP;
     public static final boolean DEF_APPEND_VERIFY = true;
 
     private static final String ATTR_GDB_PORT = "gdb_port";
