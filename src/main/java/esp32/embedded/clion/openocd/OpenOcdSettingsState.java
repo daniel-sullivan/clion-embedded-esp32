@@ -33,6 +33,9 @@ public class OpenOcdSettingsState implements PersistentStateComponent<OpenOcdSet
             ocdScripts = ocdHomeVFile.findFileByRelativePath(OpenOcdComponent.SCRIPTS_PATH_LONG);
             if (ocdScripts == null) {
                 ocdScripts = ocdHomeVFile.findFileByRelativePath(OpenOcdComponent.SCRIPTS_PATH_SHORT);
+                if (ocdScripts == null) {
+                    ocdScripts = ocdHomeVFile.findFileByRelativePath(OpenOcdComponent.SCRIPTS_PATH_MEDIUM);
+                }
             }
         }
         return ocdScripts;

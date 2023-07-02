@@ -33,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 public class OpenOcdComponent {
 
     public static final String SCRIPTS_PATH_SHORT = "scripts";
+    public static final String SCRIPTS_PATH_MEDIUM = "openocd/" + SCRIPTS_PATH_SHORT;
     public static final String SCRIPTS_PATH_LONG = "share/openocd/" + SCRIPTS_PATH_SHORT;
     public static final String BIN_OPENOCD;
     private static final Key<Long> UPLOAD_LOAD_COUNT_KEY = new Key<>(OpenOcdConfiguration.class.getName() +
