@@ -12,6 +12,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.components.fields.valueEditors.TextFieldValueEditor;
+import java.io.File;
 import java.util.function.Supplier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -241,8 +242,12 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
         }
 
         public String getPath() {
-            // return Objects.requireNonNull(projectHome.findFileByRelativePath(getText())).getPath();
-            return projectHome.getPath() + "/" + getText();
+            String text = getText();
+            if (new File(text).isAbsolute()) {
+                return text;
+            }
+            // return Objects.requireNonNull(projectHome.findFileByRelativePath(text)).getPath();
+            return projectHome.getPath() + "/" + text;
         }
 
         @Override
