@@ -45,7 +45,7 @@ public class OpenOcdComponent {
 
     private final static String[] FAIL_STRINGS = {
             "** Programming Failed **", "communication failure", "** OpenOCD init failed **"};
-    private static final String FLASH_SUCCESS_TEXT = "** Programming Finished **";
+    private static final String FLASH_SUCCESS_TEXT_REG = "(.*)Programming Finished(.*)";
     private static final Logger LOG = Logger.getInstance(OpenOcdComponent.class);
     private static final String ADAPTER_SPEED = "adapter speed";
 
@@ -182,8 +182,33 @@ public class OpenOcdComponent {
         FLASH_ERROR,
     }
 
+    public enum Flashed_STATUS {
+        INITIALIZED {
+            public Flashed_STATUS nextState() {
+                return BOOTLOADER_OK;
+            }
+        },
+        BOOTLOADER_OK {
+            public Flashed_STATUS nextState() {
+                return PARTITIONTABLE_OK;
+            }
+        },
+        PARTITIONTABLE_OK {
+            public Flashed_STATUS nextState() {
+                return APPIMAGE_OK;
+            }
+        },
+        APPIMAGE_OK {
+            public Flashed_STATUS nextState() {
+                return APPIMAGE_OK;
+            }
+        };
+        public abstract Flashed_STATUS nextState();
+    }
     private class ErrorFilter implements Filter {
         private final Project project;
+
+        private Flashed_STATUS FSTATUS_FILTER = Flashed_STATUS.INITIALIZED;
 
         ErrorFilter(Project project) {
             this.project = project;
@@ -209,16 +234,21 @@ public class OpenOcdComponent {
                         return HighlighterLayer.ERROR;
                     }
                 };
-            } else if (line.contains(FLASH_SUCCESS_TEXT)) {
-                Informational.showSuccessfulDownloadNotification(project);
+            } else if (line.matches(FLASH_SUCCESS_TEXT_REG)) {
+                FSTATUS_FILTER = FSTATUS_FILTER.nextState();
+                if (FSTATUS_FILTER == FSTATUS_FILTER.APPIMAGE_OK)  {
+                    Informational.showSuccessfulDownloadNotification(project);
+                };
             }
             return null;
         }
-    }
+    };
 
     private class DownloadFollower extends FutureResult<STATUS> implements ProcessListener {
         @Nullable
         private final VirtualFile vRunFile;
+
+        private Flashed_STATUS FSTATUS_LISTEN = Flashed_STATUS.INITIALIZED;
 
         DownloadFollower(@Nullable VirtualFile vRunFile) {
             this.vRunFile = vRunFile;
@@ -254,13 +284,15 @@ public class OpenOcdComponent {
             } else if (vRunFile == null && text.startsWith(ADAPTER_SPEED)) {
                 reset();
                 set(STATUS.FLASH_SUCCESS);
-            } else if (text.equals(FLASH_SUCCESS_TEXT)) {
-                reset();
-                if (vRunFile != null) {
-                    UPLOAD_LOAD_COUNT_KEY.set(vRunFile, vRunFile.getModificationCount());
+            } else if (text.matches(FLASH_SUCCESS_TEXT_REG)) {
+                FSTATUS_LISTEN = FSTATUS_LISTEN.nextState();
+                if (FSTATUS_LISTEN == FSTATUS_LISTEN.APPIMAGE_OK) {
+                    reset();
+                    if (vRunFile != null) {
+                        UPLOAD_LOAD_COUNT_KEY.set(vRunFile, vRunFile.getModificationCount());
+                    }
+                    set(STATUS.FLASH_SUCCESS);
                 }
-                set(STATUS.FLASH_SUCCESS);
-
             } else if (text.startsWith(ERROR_PREFIX) && !containsOneOf(text, IGNORED_STRINGS)) {
                 reset();
                 set(STATUS.FLASH_WARNING);
