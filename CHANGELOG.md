@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.2.4
+
+### Fixed
+- Fix deadlock ([#4](https://github.com/ThexXTURBOXx/clion-embedded-esp32/issues/4)) through PR ([#7](https://github.com/ThexXTURBOXx/clion-embedded-esp32/pull/7))
+
 ## 0.2.3
 
 ### Fixed
