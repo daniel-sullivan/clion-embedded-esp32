@@ -203,8 +203,10 @@ public class OpenOcdComponent {
                 return APPIMAGE_OK;
             }
         };
+
         public abstract Flashed_STATUS nextState();
     }
+
     private class ErrorFilter implements Filter {
         private final Project project;
 
@@ -236,13 +238,12 @@ public class OpenOcdComponent {
                 };
             } else if (line.matches(FLASH_SUCCESS_TEXT_REG)) {
                 FSTATUS_FILTER = FSTATUS_FILTER.nextState();
-                if (FSTATUS_FILTER == FSTATUS_FILTER.APPIMAGE_OK)  {
+                if (FSTATUS_FILTER == Flashed_STATUS.APPIMAGE_OK)
                     Informational.showSuccessfulDownloadNotification(project);
-                };
             }
             return null;
         }
-    };
+    }
 
     private class DownloadFollower extends FutureResult<STATUS> implements ProcessListener {
         @Nullable
@@ -286,7 +287,7 @@ public class OpenOcdComponent {
                 set(STATUS.FLASH_SUCCESS);
             } else if (text.matches(FLASH_SUCCESS_TEXT_REG)) {
                 FSTATUS_LISTEN = FSTATUS_LISTEN.nextState();
-                if (FSTATUS_LISTEN == FSTATUS_LISTEN.APPIMAGE_OK) {
+                if (FSTATUS_LISTEN == Flashed_STATUS.APPIMAGE_OK) {
                     reset();
                     if (vRunFile != null) {
                         UPLOAD_LOAD_COUNT_KEY.set(vRunFile, vRunFile.getModificationCount());
@@ -308,7 +309,6 @@ public class OpenOcdComponent {
             if (text.contains(sampleString)) return true;
         }
         return false;
-
     }
 
     public static boolean isLatestUploaded(File runFile) {
