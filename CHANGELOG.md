@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.3.0
+
+### Fixed
+- Fix deadlock ([#4](https://github.com/ThexXTURBOXx/clion-embedded-esp32/issues/4)) through PR ([#7](https://github.com/ThexXTURBOXx/clion-embedded-esp32/pull/9))
+- Allow not specifying a few config entries
+- Support more reset types
+- Cleanup (migrate away from obsolete and deprecated entities)
+
 ## 0.2.4
 
 ### Fixed
