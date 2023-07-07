@@ -22,9 +22,9 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.concurrency.FutureResult;
 import java.io.File;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.jdesktop.swingx.util.OS;
 import org.jetbrains.annotations.NotNull;
@@ -45,7 +45,7 @@ public class OpenOcdComponent {
 
     private final static String[] FAIL_STRINGS = {
             "** Programming Failed **", "communication failure", "** OpenOCD init failed **"};
-    private static final String FLASH_SUCCESS_TEXT_REG = "(.*)Programming Finished(.*)";
+    private static final String FLASH_SUCCESS_TEXT = "** Program Flash Complete! **";
     private static final Logger LOG = Logger.getInstance(OpenOcdComponent.class);
     private static final String ADAPTER_SPEED = "adapter speed";
 
@@ -116,6 +116,8 @@ public class OpenOcdComponent {
             commandLine.addParameters("-c", "init; reset");
         }
 
+        commandLine.addParameters("-c", "echo \"" + FLASH_SUCCESS_TEXT + "\"");
+
         if (shutdown) {
             commandLine.addParameters("-c", "shutdown");
         }
@@ -143,12 +145,17 @@ public class OpenOcdComponent {
         });
     }
 
-    public Future<STATUS> startOpenOcd(OpenOcdConfiguration config, @Nullable File fileToLoad) throws ConfigurationException {
-        if (config == null) return new FutureResult<>(STATUS.FLASH_ERROR);
+    public Future<Status> startOpenOcd(OpenOcdConfiguration config, @Nullable File fileToLoad) throws ConfigurationException {
+        CompletableFuture<Status> ret = new CompletableFuture<>();
+        if (config == null) {
+            ret.obtrudeValue(Status.FLASH_ERROR);
+            return ret;
+        }
         GeneralCommandLine commandLine = createOcdCommandLine(config, fileToLoad, null, false);
         if (process != null && !process.isProcessTerminated()) {
-            LOG.info("openOcd is already run");
-            return new FutureResult<>(STATUS.FLASH_ERROR);
+            LOG.info("OpenOCD is already run");
+            ret.obtrudeValue(Status.FLASH_ERROR);
+            return ret;
         }
         VirtualFile virtualFile = fileToLoad != null ? VfsUtil.findFileByIoFile(fileToLoad, true) : null;
         Project project = config.getProject();
@@ -169,48 +176,38 @@ public class OpenOcdComponent {
                             () -> !process.isProcessTerminated() && !process.isProcessTerminating());
 
             openOCDConsole.run();
+            ret.obtrudeValue(null); // Unneeded. Complete anyways.
             return downloadFollower;
         } catch (ExecutionException e) {
             ExecutionErrorDialog.show(e, "OpenOCD Start Failed", project);
-            return new FutureResult<>(STATUS.FLASH_ERROR);
+            ret.obtrudeValue(Status.FLASH_ERROR);
+            return ret;
         }
     }
 
-    public enum STATUS {
+    public enum Status {
         FLASH_SUCCESS,
         FLASH_WARNING,
         FLASH_ERROR,
     }
 
-    public enum Flashed_STATUS {
-        INITIALIZED {
-            public Flashed_STATUS nextState() {
-                return BOOTLOADER_OK;
-            }
-        },
-        BOOTLOADER_OK {
-            public Flashed_STATUS nextState() {
-                return PARTITIONTABLE_OK;
-            }
-        },
-        PARTITIONTABLE_OK {
-            public Flashed_STATUS nextState() {
-                return APPIMAGE_OK;
-            }
-        },
-        APPIMAGE_OK {
-            public Flashed_STATUS nextState() {
-                return APPIMAGE_OK;
-            }
-        };
+    public enum FlashedStatus {
+        INITIALIZED, APP_OK;
 
-        public abstract Flashed_STATUS nextState();
+        private FlashedStatus nextState;
+
+        static {
+            INITIALIZED.nextState = APP_OK;
+            APP_OK.nextState = APP_OK;
+        }
+
+        public FlashedStatus getNextState() {
+            return nextState;
+        }
     }
 
     private class ErrorFilter implements Filter {
         private final Project project;
-
-        private Flashed_STATUS FSTATUS_FILTER = Flashed_STATUS.INITIALIZED;
 
         ErrorFilter(Project project) {
             this.project = project;
@@ -236,20 +233,18 @@ public class OpenOcdComponent {
                         return HighlighterLayer.ERROR;
                     }
                 };
-            } else if (line.matches(FLASH_SUCCESS_TEXT_REG)) {
-                FSTATUS_FILTER = FSTATUS_FILTER.nextState();
-                if (FSTATUS_FILTER == Flashed_STATUS.APPIMAGE_OK)
-                    Informational.showSuccessfulDownloadNotification(project);
+            } else if (line.equals(FLASH_SUCCESS_TEXT)) {
+                Informational.showSuccessfulDownloadNotification(project);
             }
             return null;
         }
     }
 
-    private class DownloadFollower extends FutureResult<STATUS> implements ProcessListener {
+    private class DownloadFollower extends CompletableFuture<Status> implements ProcessListener {
         @Nullable
         private final VirtualFile vRunFile;
 
-        private Flashed_STATUS FSTATUS_LISTEN = Flashed_STATUS.INITIALIZED;
+        private FlashedStatus flashedStatusListen = FlashedStatus.INITIALIZED;
 
         DownloadFollower(@Nullable VirtualFile vRunFile) {
             this.vRunFile = vRunFile;
@@ -264,10 +259,10 @@ public class OpenOcdComponent {
         public void processTerminated(@NotNull ProcessEvent event) {
             try {
                 if (!isDone()) {
-                    set(STATUS.FLASH_ERROR);
+                    obtrudeValue(Status.FLASH_ERROR);
                 }
             } catch (Exception e) {
-                set(STATUS.FLASH_ERROR);
+                obtrudeValue(Status.FLASH_ERROR);
             }
         }
 
@@ -280,23 +275,19 @@ public class OpenOcdComponent {
         public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
             String text = event.getText().trim();
             if (containsOneOf(text, FAIL_STRINGS)) {
-                reset();
-                set(STATUS.FLASH_ERROR);
+                obtrudeValue(Status.FLASH_ERROR);
             } else if (vRunFile == null && text.startsWith(ADAPTER_SPEED)) {
-                reset();
-                set(STATUS.FLASH_SUCCESS);
-            } else if (text.matches(FLASH_SUCCESS_TEXT_REG)) {
-                FSTATUS_LISTEN = FSTATUS_LISTEN.nextState();
-                if (FSTATUS_LISTEN == Flashed_STATUS.APPIMAGE_OK) {
-                    reset();
+                obtrudeValue(Status.FLASH_SUCCESS);
+            } else if (text.contains(FLASH_SUCCESS_TEXT)) {
+                if (flashedStatusListen == FlashedStatus.APP_OK) {
                     if (vRunFile != null) {
                         UPLOAD_LOAD_COUNT_KEY.set(vRunFile, vRunFile.getModificationCount());
                     }
-                    set(STATUS.FLASH_SUCCESS);
+                    obtrudeValue(Status.FLASH_SUCCESS);
                 }
+                flashedStatusListen = flashedStatusListen.getNextState();
             } else if (text.startsWith(ERROR_PREFIX) && !containsOneOf(text, IGNORED_STRINGS)) {
-                reset();
-                set(STATUS.FLASH_WARNING);
+                obtrudeValue(Status.FLASH_WARNING);
             }
         }
     }
