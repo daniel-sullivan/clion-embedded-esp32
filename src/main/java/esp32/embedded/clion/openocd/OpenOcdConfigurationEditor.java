@@ -99,17 +99,22 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         boardConfigFile.setText(ocd.getBoardConfigFile());
         interfaceConfigFile.setText(ocd.getInterfaceConfigFile());
 
-        String root =
-                ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0]).getContentRoots()[0].getPath();
-        String bootBinPath = ocd.getBootBinPath().replaceAll(root + "/", "");
+        String root = ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0])
+                .getContentRoots()[0].getPath();
+
+        String bootBinPath = ocd.getBootBinPath();
+        if (bootBinPath != null)
+            bootBinPath = bootBinPath.replaceAll(root + "/", "");
         bootloaderFile.setText(bootBinPath);
 
-        String partitionPath = ocd.getPartitionBinPath().replaceAll(root + "/", "");
+        String partitionPath = ocd.getPartitionBinPath();
+        if (partitionPath != null)
+            partitionPath = partitionPath.replaceAll(root + "/", "");
         partitionTableFile.setText(partitionPath);
 
-        gdbPort.setText("" + ocd.getGdbPort());
+        gdbPort.setText(String.valueOf(ocd.getGdbPort()));
 
-        telnetPort.setText("" + ocd.getTelnetPort());
+        telnetPort.setText(String.valueOf(ocd.getTelnetPort()));
         downloadGroup.setSelectedValue(ocd.getDownloadType());
         programType.setSelectedValue(ocd.getProgramType());
         appendVerify.setSelected(ocd.getAppendVerify());
@@ -135,7 +140,8 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
         panel.add(new JLabel("Board config file:"), gridBag.nextLine().next());
 
-        boardConfigFile = new FileChooseInput.BoardCfg("Board config", VfsUtil.getUserHomeDir(), this::getOpenocdHome);
+        boardConfigFile = new FileChooseInput.BoardCfg("Board config", VfsUtil.getUserHomeDir(),
+                this::getOpenocdHome);
         panel.add(boardConfigFile, gridBag.next().coverLine());
 
         panel.add(new JLabel("Interface config file:"), gridBag.nextLine().next());

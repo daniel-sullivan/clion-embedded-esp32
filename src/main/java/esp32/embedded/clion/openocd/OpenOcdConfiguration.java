@@ -26,9 +26,11 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     public static final String DEF_PROGRAM_OFFSET = "0x10000";
     public static final String DEF_BOOT_OFFSET = "0x0";
     public static final String DEF_BOOT_BIN_PATH = "build/bootloader/bootloader.bin";
+    public static final boolean DEF_BOOT_BIN_PATH_SET = false;
 
     public static final String DEF_PART_OFFSET = "0x8000";
     public static final String DEF_PART_BIN_PATH = "build/partition_table/partition-table.bin";
+    public static final boolean DEF_PART_BIN_PATH_SET = false;
     public static final boolean DEF_HAR = true;
     public static final boolean DEF_FLUSH_REGS = true;
     public static final boolean DEF_BREAK_FUNCTION = true;
@@ -41,9 +43,11 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     private static final String ATTR_TELNET_PORT = "telnet_port";
     private static final String ATTR_BOARD_CONFIG = "board_config";
     private static final String ATTR_INTERFACE_CONFIG = "interface_config";
+    private static final String ATTR_BOOT_PATH_SET_CONFIG = "boot_path_set_cfg";
     private static final String ATTR_BOOT_PATH_CONFIG = "boot_path_cfg";
     private static final String ATTR_BOOT_OFFSET_CONFIG = "boot_offset_cfg";
 
+    private static final String ATTR_PART_PATH_SET_CONFIG = "part_path_set_cfg";
     private static final String ATTR_PART_PATH_CONFIG = "part_path_cfg";
     private static final String ATTR_PART_OFFSET_CONFIG = "part_offset_cfg";
     public static final String ATTR_DOWNLOAD_TYPE = "download_type";
@@ -69,8 +73,10 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
 
     private String bootloaderOffset = DEF_BOOT_OFFSET;
     private String bootloaderBinPath = DEF_BOOT_BIN_PATH;
+    private boolean bootloaderBinPathSet = DEF_BOOT_BIN_PATH_SET;
     private String partitionOffset = DEF_PART_OFFSET;
     private String partitionBinPath = DEF_PART_BIN_PATH;
+    private boolean partitionBinPathSet = DEF_PART_BIN_PATH_SET;
 
     private ProgramType programType = DEF_PROGRAM_TYPE;
     private boolean appendVerify = DEF_APPEND_VERIFY;
@@ -147,10 +153,14 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         initialBreak = readBoolAttr(element, ATTR_BREAK_FUNCTION, DEF_BREAK_FUNCTION);
         initialBreakName = element.getAttributeValue(ATTR_BREAK_FUNCTION_NAME, null, DEF_BREAK_FUNCTION_NAME);
 
-        bootloaderBinPath = element.getAttributeValue(ATTR_BOOT_PATH_CONFIG, null, DEF_BOOT_BIN_PATH);
+        bootloaderBinPathSet = readBoolAttr(element, ATTR_BOOT_PATH_SET_CONFIG, DEF_BOOT_BIN_PATH_SET);
+        bootloaderBinPath = element.getAttributeValue(ATTR_BOOT_PATH_CONFIG, null,
+                bootloaderBinPathSet ? null : DEF_BOOT_BIN_PATH);
         bootloaderOffset = element.getAttributeValue(ATTR_BOOT_OFFSET_CONFIG, null, DEF_BOOT_OFFSET);
 
-        partitionBinPath = element.getAttributeValue(ATTR_PART_PATH_CONFIG, null, DEF_PART_BIN_PATH);
+        partitionBinPathSet = readBoolAttr(element, ATTR_PART_PATH_SET_CONFIG, DEF_PART_BIN_PATH_SET);
+        partitionBinPath = element.getAttributeValue(ATTR_PART_PATH_CONFIG, null,
+                partitionBinPathSet ? null : DEF_PART_BIN_PATH);
         partitionOffset = element.getAttributeValue(ATTR_PART_OFFSET_CONFIG, null, DEF_PART_OFFSET);
 
         String programTypeStr = element.getAttributeValue(ATTR_PROGRAM_TYPE_CONFIG);
@@ -188,8 +198,8 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     @Override
     public void writeExternal(@NotNull Element element) throws WriteExternalException {
         super.writeExternal(element);
-        element.setAttribute(ATTR_GDB_PORT, "" + gdbPort);
-        element.setAttribute(ATTR_TELNET_PORT, "" + telnetPort);
+        element.setAttribute(ATTR_GDB_PORT, String.valueOf(gdbPort));
+        element.setAttribute(ATTR_TELNET_PORT, String.valueOf(telnetPort));
         if (boardConfigFile != null) {
             element.setAttribute(ATTR_BOARD_CONFIG, boardConfigFile);
         }
@@ -202,14 +212,12 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         element.setAttribute(ATTR_BREAK_FUNCTION, String.valueOf(initialBreak));
         element.setAttribute(ATTR_BREAK_FUNCTION_NAME, initialBreakName);
 
-        if (bootloaderBinPath != null) {
-            element.setAttribute(ATTR_BOOT_PATH_CONFIG, bootloaderBinPath);
-        }
+        element.setAttribute(ATTR_BOOT_PATH_SET_CONFIG, String.valueOf(bootloaderBinPathSet));
+        element.setAttribute(ATTR_BOOT_PATH_CONFIG, bootloaderBinPath == null ? "" : bootloaderBinPath);
         element.setAttribute(ATTR_BOOT_OFFSET_CONFIG, Objects.requireNonNullElse(bootloaderOffset, DEF_BOOT_OFFSET));
 
-        if (partitionBinPath != null) {
-            element.setAttribute(ATTR_PART_PATH_CONFIG, partitionBinPath);
-        }
+        element.setAttribute(ATTR_PART_PATH_SET_CONFIG, String.valueOf(partitionBinPathSet));
+        element.setAttribute(ATTR_BOOT_PATH_CONFIG, partitionBinPath == null ? "" : partitionBinPath);
         element.setAttribute(ATTR_PART_OFFSET_CONFIG, Objects.requireNonNullElse(partitionOffset, DEF_PART_OFFSET));
 
         element.setAttribute(ATTR_PROGRAM_TYPE_CONFIG, programType.name());
@@ -337,6 +345,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
 
     public void setBootBinPath(String path) {
         this.bootloaderBinPath = path;
+        this.bootloaderBinPathSet = true;
     }
 
     public String getPartitionBinPath() {
@@ -345,6 +354,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
 
     public void setPartitionBinPath(String path) {
         this.partitionBinPath = path;
+        this.partitionBinPathSet = true;
     }
 
     public ProgramType getProgramType() {

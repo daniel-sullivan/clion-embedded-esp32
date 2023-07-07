@@ -86,14 +86,22 @@ public class OpenOcdComponent {
             commandLine.addParameters("-c", "telnet_port " + config.getTelnetPort());
         }
 
-        commandLine.addParameters("-f", config.getInterfaceConfigFile());
+        if (!StringUtil.isEmpty(config.getInterfaceConfigFile())) {
+            commandLine.addParameters("-f", config.getInterfaceConfigFile());
+        }
 
         commandLine.addParameters("-f", config.getBoardConfigFile());
 
-        commandLine.addParameters("-c", config.getProgramType().toString() + " " + config.getBootBinPath() + " "
-                + config.getBootOffset() + (config.getAppendVerify() ? " verify" : ""));
-        commandLine.addParameters("-c", config.getProgramType().toString() + " " + config.getPartitionBinPath() + " "
-                + config.getPartitionOffset() + (config.getAppendVerify() ? " verify" : ""));
+        if (!StringUtil.isEmpty(config.getBootBinPath())) {
+            commandLine.addParameters("-c",
+                    config.getProgramType().toString() + " " + config.getBootBinPath() + " "
+                            + config.getBootOffset() + (config.getAppendVerify() ? " verify" : ""));
+        }
+        if (!StringUtil.isEmpty(config.getPartitionBinPath())) {
+            commandLine.addParameters("-c",
+                    config.getProgramType().toString() + " " + config.getPartitionBinPath() + " "
+                            + config.getPartitionOffset() + (config.getAppendVerify() ? " verify" : ""));
+        }
 
         if (fileToLoad != null) { // Program Command
             String command =
