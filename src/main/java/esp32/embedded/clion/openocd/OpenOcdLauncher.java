@@ -158,7 +158,7 @@ class OpenOcdLauncher extends CidrLauncher {
             XDebugSession session = debugProcess.getSession();
 
             //  Check if we need any init
-            if (openOcdConfiguration.getHAR()) {
+            if (openOcdConfiguration.getResetType().needsInit()) {
                 session.pause();
                 debugProcess.postCommand(drv -> {
                     try {

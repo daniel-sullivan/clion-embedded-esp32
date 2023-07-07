@@ -30,7 +30,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
     private IntegerField gdbPort;
     private IntegerField telnetPort;
     private ExtendableTextField offset;
-    private JCheckBox harCheck;
+    private JXRadioGroup<OpenOcdConfiguration.ResetType> resetGroup;
     private JCheckBox flushRegsCheck;
     private JCheckBox initialBreakpointCheck;
     private ExtendableTextField initialBreakpointName;
@@ -82,7 +82,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         ocdConfiguration.setOffset(offset.getText());
         ocdConfiguration.setBootOffset(bootloaderOffset.getText());
         ocdConfiguration.setPartitionOffset(partitionTableOffset.getText());
-        ocdConfiguration.setHAR(harCheck.isSelected());
+        ocdConfiguration.setResetType(resetGroup.getSelectedValue());
         ocdConfiguration.setFlushRegs(flushRegsCheck.isSelected());
         ocdConfiguration.setInitialBreak(initialBreakpointCheck.isSelected());
         ocdConfiguration.setInitialBreakName(initialBreakpointName.getText());
@@ -122,7 +122,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         offset.setText(ocd.getOffset());
         bootloaderOffset.setText(ocd.getBootOffset());
         partitionTableOffset.setText(ocd.getPartitionOffset());
-        harCheck.setSelected(ocd.getHAR());
+        resetGroup.setSelectedValue(ocd.getResetType());
         flushRegsCheck.setSelected(ocd.getFlushRegs());
         initialBreakpointCheck.setSelected(ocd.getInitialBreak());
         initialBreakpointName.setText(ocd.getInitialBreakName());
@@ -201,7 +201,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
     @NotNull
     private JPanel createDownloadSelector() {
         JPanel downloadPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-        GridLayout downloadGrid = new GridLayout(2, 2);
+        GridLayout downloadGrid = new GridLayout(3, 2);
         downloadPanel.setLayout(downloadGrid);
 
         downloadPanel.add(new JLabel("Offset:"));
@@ -212,6 +212,19 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         downloadPanel.add(new JLabel("Perform:"));
         downloadGroup = new JXRadioGroup<>(DownloadType.values());
         downloadPanel.add(downloadGroup);
+
+        downloadPanel.add(new JLabel("Reset:"));
+        resetGroup = new JXRadioGroup<>(OpenOcdConfiguration.ResetType.values());
+        resetGroup.addActionListener(e -> {
+            if (resetGroup.getSelectedValue().supportsBreakpoints()) {
+                initialBreakpointCheck.setVisible(true);
+                if (initialBreakpointCheck.isSelected()) initialBreakpointName.setVisible(true);
+            } else {
+                initialBreakpointCheck.setVisible(false);
+                initialBreakpointName.setVisible(false);
+            }
+        });
+        downloadPanel.add(resetGroup);
 
         return downloadPanel;
     }
@@ -224,17 +237,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         flushRegsCheck = new JCheckBox("Flush registers", OpenOcdConfiguration.DEF_FLUSH_REGS);
         settingsPanel.add(flushRegsCheck);
 
-        harCheck = new JCheckBox("Halt after reset", OpenOcdConfiguration.DEF_HAR);
-        harCheck.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                initialBreakpointCheck.setVisible(true);
-                if (initialBreakpointCheck.isSelected()) initialBreakpointName.setVisible(true);
-            } else {
-                initialBreakpointCheck.setVisible(false);
-                initialBreakpointName.setVisible(false);
-            }
-        });
-        settingsPanel.add(harCheck);
+        settingsPanel.add(new JPanel()); // Placeholder
 
         initialBreakpointCheck = new JCheckBox("Break on function", OpenOcdConfiguration.DEF_BREAK_FUNCTION);
         initialBreakpointCheck.addItemListener(e -> initialBreakpointName.setVisible(e.getStateChange() == ItemEvent.SELECTED));

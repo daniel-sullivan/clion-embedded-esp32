@@ -31,7 +31,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     public static final String DEF_PART_OFFSET = "0x8000";
     public static final String DEF_PART_BIN_PATH = "build/partition_table/partition-table.bin";
     public static final boolean DEF_PART_BIN_PATH_SET = false;
-    public static final boolean DEF_HAR = true;
+    public static final ResetType DEF_RESET_TYPE = ResetType.HALT;
     public static final boolean DEF_FLUSH_REGS = true;
     public static final boolean DEF_BREAK_FUNCTION = true;
     public static final String DEF_BREAK_FUNCTION_NAME = "app_main";
@@ -51,7 +51,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     private static final String ATTR_PART_PATH_CONFIG = "part_path_cfg";
     private static final String ATTR_PART_OFFSET_CONFIG = "part_offset_cfg";
     public static final String ATTR_DOWNLOAD_TYPE = "download_type";
-    public static final String ATTR_HAR = "halt_on_reset";
+    public static final String ATTR_RESET_TYPE = "reset_type";
     public static final String ATTR_FLUSH_REGS = "flush_regs";
     public static final String ATTR_BREAK_FUNCTION = "break";
     public static final String ATTR_BREAK_FUNCTION_NAME = "break_function";
@@ -66,7 +66,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     private String interfaceConfigFile;
     private DownloadType downloadType = DEF_DOWNLOAD_TYPE;
     private String offset = DEF_PROGRAM_OFFSET;
-    private boolean haltOnReset = DEF_HAR;
+    private ResetType resetType = DEF_RESET_TYPE;
     private boolean flushRegs = DEF_FLUSH_REGS;
     private boolean initialBreak = DEF_BREAK_FUNCTION;
     private String initialBreakName = DEF_BREAK_FUNCTION_NAME;
@@ -108,9 +108,10 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     }
 
     public enum ResetType {
-        RUN("init;reset run;"),
-        INIT("init;reset init;"),
-        HALT("init;reset halt"),
+        HALT("init; reset halt", true, true),
+        RESET("init; reset"),
+        RUN("init; reset run;"),
+        INIT("init; reset init;"),
         NONE("");
 
         @Override
@@ -119,13 +120,29 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         }
 
         ResetType(String command) {
+            this(command, false, false);
+        }
+
+        ResetType(String command, boolean supportsBreakpoints, boolean needsInit) {
             this.command = command;
+            this.supportsBreakpoints = supportsBreakpoints;
+            this.needsInit = needsInit;
         }
 
         private final String command;
+        private final boolean supportsBreakpoints;
+        private final boolean needsInit;
 
         public final String getCommand() {
             return command;
+        }
+
+        public final boolean supportsBreakpoints() {
+            return supportsBreakpoints;
+        }
+
+        public final boolean needsInit() {
+            return needsInit;
         }
 
     }
@@ -148,7 +165,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         gdbPort = readIntAttr(element, ATTR_GDB_PORT, DEF_GDB_PORT);
         telnetPort = readIntAttr(element, ATTR_TELNET_PORT, DEF_TELNET_PORT);
         downloadType = readEnumAttr(element, ATTR_DOWNLOAD_TYPE, DownloadType.ALWAYS);
-        haltOnReset = readBoolAttr(element, ATTR_HAR, DEF_HAR);
+        resetType = readEnumAttr(element, ATTR_RESET_TYPE, DEF_RESET_TYPE);
         flushRegs = readBoolAttr(element, ATTR_FLUSH_REGS, DEF_FLUSH_REGS);
         initialBreak = readBoolAttr(element, ATTR_BREAK_FUNCTION, DEF_BREAK_FUNCTION);
         initialBreakName = element.getAttributeValue(ATTR_BREAK_FUNCTION_NAME, null, DEF_BREAK_FUNCTION_NAME);
@@ -207,7 +224,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
             element.setAttribute(ATTR_INTERFACE_CONFIG, interfaceConfigFile);
         }
         element.setAttribute(ATTR_DOWNLOAD_TYPE, downloadType.name());
-        element.setAttribute(ATTR_HAR, String.valueOf(haltOnReset));
+        element.setAttribute(ATTR_RESET_TYPE, resetType.name());
         element.setAttribute(ATTR_FLUSH_REGS, String.valueOf(flushRegs));
         element.setAttribute(ATTR_BREAK_FUNCTION, String.valueOf(initialBreak));
         element.setAttribute(ATTR_BREAK_FUNCTION_NAME, initialBreakName);
@@ -291,12 +308,12 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         this.offset = offset;
     }
 
-    public boolean getHAR() {
-        return haltOnReset;
+    public ResetType getResetType() {
+        return resetType;
     }
 
-    public void setHAR(boolean haltOnReset) {
-        this.haltOnReset = haltOnReset;
+    public void setResetType(ResetType resetType) {
+        this.resetType = resetType;
     }
 
     public boolean getFlushRegs() {

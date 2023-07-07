@@ -118,11 +118,7 @@ public class OpenOcdComponent {
             commandLine.addParameters("-c", command);
         }
 
-        if (config.getHAR()) {
-            commandLine.addParameters("-c", "init; reset halt");
-        } else {
-            commandLine.addParameters("-c", "init; reset");
-        }
+        commandLine.addParameters("-c", config.getResetType().getCommand());
 
         commandLine.addParameters("-c", "echo \"" + FLASH_SUCCESS_TEXT + "\"");
 
