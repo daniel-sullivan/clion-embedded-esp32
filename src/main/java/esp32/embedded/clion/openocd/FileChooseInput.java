@@ -22,7 +22,8 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
 
     public static final String BOARD_FOLDER = "board";
     public static final String INTERFACE_FOLDER = "interface";
-    public static final String BIN_FOLDER = "bin";
+    public static final String BOOT_BIN_FOLDER = "bootloader";
+    public static final String PART_BIN_FOLDER = "partition_table";
     protected final TextFieldValueEditor<VirtualFile> editor;
     private final FileChooserDescriptor fileDescriptor;
 
@@ -236,10 +237,12 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
     public static class BinFile extends FileChooseInput {
 
         private final VirtualFile projectHome;
+        private final String valueName;
 
         public BinFile(String valueName, VirtualFile defValue, VirtualFile projectHome) {
             super(valueName, defValue);
             this.projectHome = projectHome;
+            this.valueName = valueName;
         }
 
         public String getPath() {
@@ -257,9 +260,17 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
         @Override
         protected VirtualFile getDefaultLocation() {
             if (projectHome != null) {
-                VirtualFile bin = projectHome.findFileByRelativePath(BIN_FOLDER);
-                if (bin != null) {
-                    return bin;
+                if (valueName == "Bootloader file") {
+                    VirtualFile bin = projectHome.findFileByRelativePath(BOOT_BIN_FOLDER);
+                    if (bin != null) {
+                        return bin;
+                    }
+                }
+                if (valueName == "Partition Table file") {
+                    VirtualFile bin = projectHome.findFileByRelativePath(PART_BIN_FOLDER);
+                    if (bin != null) {
+                        return bin;
+                    }
                 }
             }
             return super.getDefaultLocation();
