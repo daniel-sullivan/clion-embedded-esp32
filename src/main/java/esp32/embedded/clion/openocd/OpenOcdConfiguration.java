@@ -234,7 +234,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         element.setAttribute(ATTR_BOOT_OFFSET_CONFIG, Objects.requireNonNullElse(bootloaderOffset, DEF_BOOT_OFFSET));
 
         element.setAttribute(ATTR_PART_PATH_SET_CONFIG, String.valueOf(partitionBinPathSet));
-        element.setAttribute(ATTR_BOOT_PATH_CONFIG, partitionBinPath == null ? "" : partitionBinPath);
+        element.setAttribute(ATTR_PART_PATH_CONFIG, partitionBinPath == null ? "" : partitionBinPath);
         element.setAttribute(ATTR_PART_OFFSET_CONFIG, Objects.requireNonNullElse(partitionOffset, DEF_PART_OFFSET));
 
         element.setAttribute(ATTR_PROGRAM_TYPE_CONFIG, programType.name());
