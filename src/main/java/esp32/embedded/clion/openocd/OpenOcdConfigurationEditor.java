@@ -100,7 +100,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         interfaceConfigFile.setText(ocd.getInterfaceConfigFile());
 
         String root = ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0])
-                .getContentRoots()[0].getPath();
+                .getExcludeRoots()[0].getPath();
 
         String bootBinPath = ocd.getBootBinPath();
         if (bootBinPath != null)
@@ -151,7 +151,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         panel.add(interfaceConfigFile, gridBag.next().coverLine());
 
         VirtualFile contentRoot =
-                ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0]).getContentRoots()[0];
+                ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0]).getExcludeRoots()[0];
 
         JPanel bootloaderPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
         bootloaderPanel.add(new JLabel("Bootloader binary:"));
