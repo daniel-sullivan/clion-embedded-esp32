@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.3.1
+
+### Fixed
+- Fix typo when restoring saved run configs
+
 ## 0.3.0
 
 ### Fixed
