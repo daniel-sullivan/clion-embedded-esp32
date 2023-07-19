@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.3.2
+
+### Fixed
+- Fix root path ([#10](https://github.com/ThexXTURBOXx/clion-embedded-esp32/pull/10))
+
 ## 0.3.1
 
 ### Fixed
