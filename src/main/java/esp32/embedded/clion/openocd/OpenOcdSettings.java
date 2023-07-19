@@ -158,5 +158,7 @@ public class OpenOcdSettings implements ProjectComponent, Configurable {
             }
             return component;
         }
+
     }
+
 }
