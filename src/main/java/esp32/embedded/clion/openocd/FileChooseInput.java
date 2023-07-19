@@ -237,12 +237,10 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
     public static class BinFile extends FileChooseInput {
 
         private final VirtualFile projectHome;
-        private final String valueName;
 
         public BinFile(String valueName, VirtualFile defValue, VirtualFile projectHome) {
             super(valueName, defValue);
             this.projectHome = projectHome;
-            this.valueName = valueName;
         }
 
         public String getPath() {
@@ -260,17 +258,14 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
         @Override
         protected VirtualFile getDefaultLocation() {
             if (projectHome != null) {
-                if (valueName == "Bootloader file") {
+                String valueName = getValueName();
+                if (valueName.equals(OpenOcdConfigurationEditor.BOOTLOADER_FILE)) {
                     VirtualFile bin = projectHome.findFileByRelativePath(BOOT_BIN_FOLDER);
-                    if (bin != null) {
-                        return bin;
-                    }
+                    if (bin != null) return bin;
                 }
-                if (valueName == "Partition Table file") {
+                if (valueName.equals(OpenOcdConfigurationEditor.PART_TABLE_FILE)) {
                     VirtualFile bin = projectHome.findFileByRelativePath(PART_BIN_FOLDER);
-                    if (bin != null) {
-                        return bin;
-                    }
+                    if (bin != null) return bin;
                 }
             }
             return super.getDefaultLocation();

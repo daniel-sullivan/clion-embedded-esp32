@@ -27,6 +27,8 @@ import org.jdesktop.swingx.JXRadioGroup;
 import org.jetbrains.annotations.NotNull;
 
 public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettingsEditor {
+    public static final String BOOTLOADER_FILE = "Bootloader file";
+    public static final String PART_TABLE_FILE = "Partition Table file";
     private IntegerField gdbPort;
     private IntegerField telnetPort;
     private ExtendableTextField offset;
@@ -155,7 +157,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
         JPanel bootloaderPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
         bootloaderPanel.add(new JLabel("Bootloader binary:"));
-        bootloaderFile = new FileChooseInput.BinFile("Bootloader file", VfsUtil.getUserHomeDir(), contentRoot);
+        bootloaderFile = new FileChooseInput.BinFile(BOOTLOADER_FILE, VfsUtil.getUserHomeDir(), contentRoot);
         bootloaderPanel.add(bootloaderFile);
 
         bootloaderPanel.add(new JLabel("Bootloader offset:"));
@@ -166,7 +168,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
         JPanel partitionPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
         partitionPanel.add(new JLabel("Partition Table binary:"));
-        partitionTableFile = new FileChooseInput.BinFile("Partition Table file", VfsUtil.getUserHomeDir(), contentRoot);
+        partitionTableFile = new FileChooseInput.BinFile(PART_TABLE_FILE, VfsUtil.getUserHomeDir(), contentRoot);
         partitionPanel.add(partitionTableFile);
 
         partitionPanel.add(new JLabel("Partition Table offset:"));
