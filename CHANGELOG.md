@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.3.3
+
+### Fixed
+- Updated to 2023.3 EAP
+
 ## 0.3.2
 
 ### Fixed

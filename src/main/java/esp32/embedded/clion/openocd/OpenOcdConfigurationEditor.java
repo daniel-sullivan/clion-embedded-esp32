@@ -19,6 +19,7 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
+import java.util.Objects;
 import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -101,8 +102,8 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         boardConfigFile.setText(ocd.getBoardConfigFile());
         interfaceConfigFile.setText(ocd.getInterfaceConfigFile());
 
-        String root = ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0])
-                .getExcludeRoots()[0].getParent().getPath();
+        ModuleRootManager manager = ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0]);
+        String root = Objects.requireNonNull(getContentRoot(manager)).getPath();
 
         String bootBinPath = ocd.getBootBinPath();
         if (bootBinPath != null)
@@ -152,8 +153,8 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
                 this::getOpenocdHome);
         panel.add(interfaceConfigFile, gridBag.next().coverLine());
 
-        VirtualFile contentRoot = ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0])
-                .getExcludeRoots()[0].getParent();
+        ModuleRootManager manager = ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0]);
+        VirtualFile contentRoot = getContentRoot(manager);
 
         JPanel bootloaderPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
         bootloaderPanel.add(new JLabel("Bootloader binary:"));
@@ -229,6 +230,16 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         downloadPanel.add(resetGroup);
 
         return downloadPanel;
+    }
+
+    private VirtualFile getContentRoot(ModuleRootManager manager) {
+        VirtualFile[] contentRoots = manager.getContentRoots();
+        if (contentRoots.length > 0) return contentRoots[0].getParent();
+
+        VirtualFile[] excludeRoots = manager.getExcludeRoots();
+        if (excludeRoots.length > 0) return excludeRoots[0].getParent();
+
+        throw new IllegalStateException("Cannot find content root!");
     }
 
     private JPanel createGDBSettingsSelector() {
