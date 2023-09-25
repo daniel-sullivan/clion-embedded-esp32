@@ -14,17 +14,4 @@
                              displayName="OpenOCD Support" groupId="build"/>
     </extensions>
 
-    <project-components>
-        <component>
-            <loadForDefaultProject>true</loadForDefaultProject>
-            <implementation-class>esp32.embedded.clion.openocd.OpenOcdSettingsState</implementation-class>
-        </component>
-        <component>
-            <implementation-class>esp32.embedded.clion.openocd.OpenOcdSettings</implementation-class>
-        </component>
-        <component>
-            <implementation-class>esp32.embedded.clion.openocd.OpenOcdComponent</implementation-class>
-        </component>
-    </project-components>
-
 </idea-plugin>

@@ -6,6 +6,7 @@
 
 ### Fixed
 - Updated to 2023.3 EAP
+- Remove deprecations
 
 ## 0.3.2
 

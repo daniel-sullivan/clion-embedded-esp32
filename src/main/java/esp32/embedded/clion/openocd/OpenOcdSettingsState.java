@@ -2,6 +2,7 @@ package esp32.embedded.clion.openocd;
 
 import com.intellij.execution.configurations.PathEnvironmentVariableUtil;
 import com.intellij.openapi.components.PersistentStateComponent;
+import com.intellij.openapi.components.Service;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -14,8 +15,9 @@ import org.jetbrains.annotations.Nullable;
 /**
  * (c) elmot on 21.10.2017.
  */
+@Service(Service.Level.PROJECT)
 @State(name = "elmot.OpenOcdPlugin")
-public class OpenOcdSettingsState implements PersistentStateComponent<OpenOcdSettingsState> {
+public final class OpenOcdSettingsState implements PersistentStateComponent<OpenOcdSettingsState> {
 
     public String openOcdHome;
     public boolean shippedGdb;
@@ -41,7 +43,7 @@ public class OpenOcdSettingsState implements PersistentStateComponent<OpenOcdSet
         return ocdScripts;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public OpenOcdSettingsState getState() {
         return this;
@@ -70,7 +72,7 @@ public class OpenOcdSettingsState implements PersistentStateComponent<OpenOcdSet
     }
 
     @NotNull
-    protected String defOpenOcdLocation() {
+    private String defOpenOcdLocation() {
         if (!OS.isWindows()) return "/usr";
         VirtualFile defDir = VfsUtil.getUserHomeDir();
         if (defDir != null) {

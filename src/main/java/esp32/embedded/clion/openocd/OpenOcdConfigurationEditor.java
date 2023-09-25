@@ -97,7 +97,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
         OpenOcdConfiguration ocd = (OpenOcdConfiguration) cMakeAppRunConfiguration;
 
-        openocdHome = ocd.getProject().getComponent(OpenOcdSettingsState.class).openOcdHome;
+        openocdHome = ocd.getProject().getService(OpenOcdSettingsState.class).openOcdHome;
 
         boardConfigFile.setText(ocd.getBoardConfigFile());
         interfaceConfigFile.setText(ocd.getInterfaceConfigFile());

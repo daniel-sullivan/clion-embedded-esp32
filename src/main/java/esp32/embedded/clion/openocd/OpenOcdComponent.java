@@ -10,6 +10,7 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.util.ExecutionErrorDialog;
+import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
@@ -30,14 +31,15 @@ import org.jdesktop.swingx.util.OS;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class OpenOcdComponent {
+@Service(Service.Level.PROJECT)
+public final class OpenOcdComponent {
 
     public static final String SCRIPTS_PATH_SHORT = "scripts";
     public static final String SCRIPTS_PATH_MEDIUM = "openocd/" + SCRIPTS_PATH_SHORT;
     public static final String SCRIPTS_PATH_LONG = "share/openocd/" + SCRIPTS_PATH_SHORT;
     public static final String BIN_OPENOCD;
     private static final Key<Long> UPLOAD_LOAD_COUNT_KEY = new Key<>(OpenOcdConfiguration.class.getName() +
-            "#LAST_DOWNLOAD_MOD_COUNT");
+                                                                     "#LAST_DOWNLOAD_MOD_COUNT");
     private static final String ERROR_PREFIX = "Error: ";
     private static final String[] IGNORED_STRINGS = {
             "clearing lockup after double fault",
@@ -64,7 +66,7 @@ public class OpenOcdComponent {
     public static GeneralCommandLine createOcdCommandLine(OpenOcdConfiguration config, File fileToLoad,
                                                           @Nullable String additionalCommand, boolean shutdown) throws ConfigurationException {
         Project project = config.getProject();
-        OpenOcdSettingsState ocdSettings = project.getComponent(OpenOcdSettingsState.class);
+        OpenOcdSettingsState ocdSettings = project.getService(OpenOcdSettingsState.class);
         if (StringUtil.isEmpty(config.getBoardConfigFile())) {
             throw new ConfigurationException("Board Config file is not defined.", "OpenOCD Run Error");
         }
@@ -95,12 +97,12 @@ public class OpenOcdComponent {
         if (!StringUtil.isEmpty(config.getBootBinPath())) {
             commandLine.addParameters("-c",
                     config.getProgramType().toString() + " " + config.getBootBinPath() + " "
-                            + config.getBootOffset() + (config.getAppendVerify() ? " verify" : ""));
+                    + config.getBootOffset() + (config.getAppendVerify() ? " verify" : ""));
         }
         if (!StringUtil.isEmpty(config.getPartitionBinPath())) {
             commandLine.addParameters("-c",
                     config.getProgramType().toString() + " " + config.getPartitionBinPath() + " "
-                            + config.getPartitionOffset() + (config.getAppendVerify() ? " verify" : ""));
+                    + config.getPartitionOffset() + (config.getAppendVerify() ? " verify" : ""));
         }
 
         if (fileToLoad != null) { // Program Command

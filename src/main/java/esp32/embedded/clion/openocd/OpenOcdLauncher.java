@@ -84,7 +84,7 @@ class OpenOcdLauncher extends CidrLauncher {
     protected CidrDebugProcess createDebugProcess(@NotNull CommandLineState commandLineState,
                                                   @NotNull XDebugSession xDebugSession) throws ExecutionException {
         Project project = commandLineState.getEnvironment().getProject();
-        OpenOcdSettingsState ocdSettings = project.getComponent(OpenOcdSettingsState.class);
+        OpenOcdSettingsState ocdSettings = project.getService(OpenOcdSettingsState.class);
         CidrRemoteDebugParameters remoteDebugParameters = new CidrRemoteDebugParameters();
 
         remoteDebugParameters.setSymbolFile(findRunFile(commandLineState).getAbsolutePath());
@@ -148,9 +148,7 @@ class OpenOcdLauncher extends CidrLauncher {
             while (!debugProcess.getCurrentStateMessage().equals("Connected")) {
                 try {
                     Thread.sleep(100); // Try to be a little bit kind to the CPU...
-
-                } catch (Exception e) {
-                    // TODO: Handle
+                } catch (Throwable ignored) {
                 }
             }
 
@@ -217,7 +215,7 @@ class OpenOcdLauncher extends CidrLauncher {
         if (openOcdConfiguration.getDownloadType() != DownloadType.NONE) {
             runFile = findRunFile(commandLineState);
             if (openOcdConfiguration.getDownloadType() == DownloadType.UPDATED_ONLY &&
-                    OpenOcdComponent.isLatestUploaded(runFile)) {
+                OpenOcdComponent.isLatestUploaded(runFile)) {
                 runFile = null;
             }
         }
@@ -270,7 +268,7 @@ class OpenOcdLauncher extends CidrLauncher {
     }
 
     private OpenOcdComponent findOpenOcdAction(Project project) {
-        return project.getComponent(OpenOcdComponent.class);
+        return project.getService(OpenOcdComponent.class);
     }
 
     @NotNull
