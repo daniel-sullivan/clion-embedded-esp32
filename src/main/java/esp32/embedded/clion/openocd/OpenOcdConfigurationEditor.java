@@ -13,6 +13,8 @@ import com.intellij.util.ui.GridBag;
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration;
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfigurationSettingsEditor;
 import com.jetbrains.cidr.cpp.execution.CMakeBuildConfigurationHelper;
+import com.jetbrains.cidr.cpp.execution.remote.DebuggerData;
+import com.jetbrains.cidr.cpp.execution.remote.DebuggersComboBoxWithModel;
 import esp32.embedded.clion.openocd.OpenOcdConfiguration.DownloadType;
 import esp32.embedded.clion.openocd.OpenOcdConfiguration.ProgramType;
 import java.awt.Component;
@@ -30,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettingsEditor {
     public static final String BOOTLOADER_FILE = "Bootloader file";
     public static final String PART_TABLE_FILE = "Partition Table file";
+    private DebuggersComboBoxWithModel debuggers;
     private IntegerField gdbPort;
     private IntegerField telnetPort;
     private ExtendableTextField offset;
@@ -76,6 +79,10 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
         gdbPort.validateContent();
         telnetPort.validateContent();
+
+        DebuggerData selectedDebugger = debuggers.getSelectedDebugger();
+        ocdConfiguration.setDebuggerData(selectedDebugger);
+
         ocdConfiguration.setGdbPort(gdbPort.getValue());
         ocdConfiguration.setTelnetPort(telnetPort.getValue());
         ocdConfiguration.setDownloadType(downloadGroup.getSelectedValue());
@@ -115,6 +122,8 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
             partitionPath = partitionPath.replaceAll(root + "/", "");
         partitionTableFile.setText(partitionPath);
 
+        debuggers.resetModel(ocd.getDebuggerData());
+
         gdbPort.setText(String.valueOf(ocd.getGdbPort()));
 
         telnetPort.setText(String.valueOf(ocd.getTelnetPort()));
@@ -141,14 +150,16 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
             }
         }
 
-        panel.add(new JLabel("Board config file:"), gridBag.nextLine().next());
+        this.debuggers = new DebuggersComboBoxWithModel(this.myProject, true, true);
+        panel.add(new JLabel("Debugger:"), gridBag.nextLine().next());
+        panel.add(debuggers.getComponent(), gridBag.next().coverLine());
 
+        panel.add(new JLabel("Board config file:"), gridBag.nextLine().next());
         boardConfigFile = new FileChooseInput.BoardCfg("Board config", VfsUtil.getUserHomeDir(),
                 this::getOpenocdHome);
         panel.add(boardConfigFile, gridBag.next().coverLine());
 
         panel.add(new JLabel("Interface config file:"), gridBag.nextLine().next());
-
         interfaceConfigFile = new FileChooseInput.InterfaceCfg("Interface config", VfsUtil.getUserHomeDir(),
                 this::getOpenocdHome);
         panel.add(interfaceConfigFile, gridBag.next().coverLine());

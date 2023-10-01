@@ -9,6 +9,8 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.openapi.util.text.StringUtil;
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration;
+import com.jetbrains.cidr.cpp.execution.debugger.CLionDebuggerKind;
+import com.jetbrains.cidr.cpp.execution.remote.DebuggerData;
 import com.jetbrains.cidr.execution.CidrCommandLineState;
 import com.jetbrains.cidr.execution.CidrExecutableDataHolder;
 import java.util.Objects;
@@ -20,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
  * (c) elmot on 29.9.2017.
  */
 public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements CidrExecutableDataHolder {
+    public static final DebuggerData DEF_DEBUGGER = new DebuggerData(CLionDebuggerKind.Bundled.GDB.INSTANCE);
     public static final int DEF_GDB_PORT = 3333;
     public static final int DEF_TELNET_PORT = 4444;
     public static final DownloadType DEF_DOWNLOAD_TYPE = DownloadType.ALWAYS;
@@ -39,6 +42,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     public static final ProgramType DEF_PROGRAM_TYPE = ProgramType.PROGRAM_ESP;
     public static final boolean DEF_APPEND_VERIFY = true;
 
+    private static final String ATTR_DEBUGGER = "gdb_debugger";
     private static final String ATTR_GDB_PORT = "gdb_port";
     private static final String ATTR_TELNET_PORT = "telnet_port";
     private static final String ATTR_BOARD_CONFIG = "board_config";
@@ -60,6 +64,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     public static final String ATTR_APPEND_VERIFY_CONFIG = "app_verify_cfg";
 
 
+    private DebuggerData debuggerData = DEF_DEBUGGER;
     private int gdbPort = DEF_GDB_PORT;
     private int telnetPort = DEF_TELNET_PORT;
     private String boardConfigFile;
@@ -162,6 +167,12 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         super.readExternal(element);
         boardConfigFile = element.getAttributeValue(ATTR_BOARD_CONFIG);
         interfaceConfigFile = element.getAttributeValue(ATTR_INTERFACE_CONFIG);
+
+        Element debuggerElement = element.getChild(ATTR_DEBUGGER);
+        if (debuggerElement != null) {
+            debuggerData.readExternal(debuggerElement);
+        }
+
         gdbPort = readIntAttr(element, ATTR_GDB_PORT, DEF_GDB_PORT);
         telnetPort = readIntAttr(element, ATTR_TELNET_PORT, DEF_TELNET_PORT);
         downloadType = readEnumAttr(element, ATTR_DOWNLOAD_TYPE, DownloadType.ALWAYS);
@@ -215,6 +226,11 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     @Override
     public void writeExternal(@NotNull Element element) throws WriteExternalException {
         super.writeExternal(element);
+
+        Element debuggerElement = new Element(ATTR_DEBUGGER);
+        element.addContent(debuggerElement);
+        debuggerData.writeExternal(debuggerElement);
+
         element.setAttribute(ATTR_GDB_PORT, String.valueOf(gdbPort));
         element.setAttribute(ATTR_TELNET_PORT, String.valueOf(telnetPort));
         if (boardConfigFile != null) {
@@ -257,6 +273,14 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     private void checkPort(int port) throws RuntimeConfigurationException {
         if (port <= 1024 || port > 65535)
             throw new RuntimeConfigurationException("Port value must be in the range [1024...65535]");
+    }
+
+    public DebuggerData getDebuggerData() {
+        return debuggerData;
+    }
+
+    public void setDebuggerData(DebuggerData debuggerData) {
+        this.debuggerData = debuggerData;
     }
 
     public int getGdbPort() {

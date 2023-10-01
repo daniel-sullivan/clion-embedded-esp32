@@ -90,15 +90,11 @@ class OpenOcdLauncher extends CidrLauncher {
         remoteDebugParameters.setSymbolFile(findRunFile(commandLineState).getAbsolutePath());
         remoteDebugParameters.setRemoteCommand("tcp:localhost:" + openOcdConfiguration.getGdbPort());
 
-        CPPToolchains.Toolchain toolchain = CPPToolchains.getInstance().getDefaultToolchain();
-        if (toolchain == null) {
-            throw new ExecutionException("Project toolchain is not defined. Please define it in the project settings.");
-        }
-        String gdbPath;
+        CPPToolchains.Toolchain toolchain = openOcdConfiguration.getDebuggerData().getOrCreateDebuggerToolchain();
         if (ocdSettings.shippedGdb) {
             toolchain = toolchain.copy();
             File gdbFile = CidrDebuggerPathManager.getBundledGDBBinary();
-            gdbPath = gdbFile.getAbsolutePath();
+            String gdbPath = gdbFile.getAbsolutePath();
             CPPDebugger cppDebugger = CPPDebugger.create(CPPDebugger.Kind.CUSTOM_GDB, gdbPath);
             toolchain.setDebugger(cppDebugger);
         }
