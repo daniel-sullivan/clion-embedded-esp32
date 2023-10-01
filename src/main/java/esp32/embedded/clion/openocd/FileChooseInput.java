@@ -328,7 +328,7 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
         @Override
         public boolean validateFile(VirtualFile virtualFile) {
             return virtualFile.exists() && !virtualFile.isDirectory()
-                    && VfsUtil.virtualToIoFile(virtualFile).canExecute();
+                   && VfsUtil.virtualToIoFile(virtualFile).canExecute();
         }
 
         @Override
@@ -352,7 +352,7 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
             if (!virtualFile.isDirectory()) return false;
             VirtualFile openOcdBinary = virtualFile.findFileByRelativePath(OpenOcdComponent.BIN_OPENOCD);
             if (openOcdBinary == null || openOcdBinary.isDirectory()
-                    || !VfsUtil.virtualToIoFile(openOcdBinary).canExecute()) return false;
+                || !VfsUtil.virtualToIoFile(openOcdBinary).canExecute()) return false;
             VirtualFile ocdScripts = OpenOcdSettingsState.findOcdScripts(virtualFile);
             if (ocdScripts != null) {
                 VirtualFile ocdBoard = ocdScripts.findFileByRelativePath(BOARD_FOLDER);
