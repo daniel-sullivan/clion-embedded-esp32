@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.3.4
+
+### Added
+
+- Add debugger configuration ([#12](https://github.com/ThexXTURBOXx/clion-embedded-esp32/issues/12))
+
 ## 0.3.3
 
 ### Fixed
