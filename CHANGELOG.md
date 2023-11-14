@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.3.5
+
+### Fixed
+
+- Fixed content roots
+
 ## 0.3.4
 
 ### Added
