@@ -245,7 +245,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
     private VirtualFile getContentRoot(ModuleRootManager manager) {
         VirtualFile[] contentRoots = manager.getContentRoots();
-        if (contentRoots.length > 0) return contentRoots[0].getParent();
+        if (contentRoots.length > 0) return contentRoots[0];
 
         VirtualFile[] excludeRoots = manager.getExcludeRoots();
         if (excludeRoots.length > 0) return excludeRoots[0].getParent();
