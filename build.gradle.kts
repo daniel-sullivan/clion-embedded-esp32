@@ -9,11 +9,9 @@ plugins {
     // Java support
     id("java")
     // Gradle IntelliJ Plugin
-    id("org.jetbrains.intellij") version "1.15.0"
+    id("org.jetbrains.intellij") version "1.16.0"
     // Gradle Changelog Plugin
     id("org.jetbrains.changelog") version "2.2.0"
-    // Gradle Qodana Plugin
-    id("org.jetbrains.qodana") version "0.1.13"
 }
 
 val releasePropertiesFile = File(rootProject.rootDir, "release.properties")
@@ -47,14 +45,6 @@ intellij {
 changelog {
     version.set(properties("pluginVersion"))
     groups.set(emptyList())
-}
-
-// Configure Gradle Qodana Plugin - read more: https://github.com/JetBrains/gradle-qodana-plugin
-qodana {
-    cachePath.set(projectDir.resolve(".qodana").canonicalPath)
-    reportPath.set(projectDir.resolve("build/reports/inspections").canonicalPath)
-    saveReport.set(true)
-    showReport.set(System.getenv("QODANA_SHOW_REPORT").toBoolean())
 }
 
 tasks {
