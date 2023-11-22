@@ -54,6 +54,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
     private static final String ATTR_PART_PATH_SET_CONFIG = "part_path_set_cfg";
     private static final String ATTR_PART_PATH_CONFIG = "part_path_cfg";
     private static final String ATTR_PART_OFFSET_CONFIG = "part_offset_cfg";
+    private static final String ATTR_PROGRAM_OFFSET_CONFIG = "program_offset_cfg";
     public static final String ATTR_DOWNLOAD_TYPE = "download_type";
     public static final String ATTR_RESET_TYPE = "reset_type";
     public static final String ATTR_FLUSH_REGS = "flush_regs";
@@ -181,6 +182,8 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         initialBreak = readBoolAttr(element, ATTR_BREAK_FUNCTION, DEF_BREAK_FUNCTION);
         initialBreakName = element.getAttributeValue(ATTR_BREAK_FUNCTION_NAME, null, DEF_BREAK_FUNCTION_NAME);
 
+        offset = element.getAttributeValue(ATTR_PROGRAM_OFFSET_CONFIG, null, DEF_PROGRAM_OFFSET);
+
         bootloaderBinPathSet = readBoolAttr(element, ATTR_BOOT_PATH_SET_CONFIG, DEF_BOOT_BIN_PATH_SET);
         bootloaderBinPath = element.getAttributeValue(ATTR_BOOT_PATH_CONFIG, null,
                 bootloaderBinPathSet ? null : DEF_BOOT_BIN_PATH);
@@ -252,6 +255,8 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         element.setAttribute(ATTR_PART_PATH_SET_CONFIG, String.valueOf(partitionBinPathSet));
         element.setAttribute(ATTR_PART_PATH_CONFIG, partitionBinPath == null ? "" : partitionBinPath);
         element.setAttribute(ATTR_PART_OFFSET_CONFIG, Objects.requireNonNullElse(partitionOffset, DEF_PART_OFFSET));
+
+        element.setAttribute(ATTR_PROGRAM_OFFSET_CONFIG, Objects.requireNonNullElse(offset, DEF_PROGRAM_OFFSET));
 
         element.setAttribute(ATTR_PROGRAM_TYPE_CONFIG, programType.name());
         element.setAttribute(ATTR_APPEND_VERIFY_CONFIG, String.valueOf(appendVerify));
