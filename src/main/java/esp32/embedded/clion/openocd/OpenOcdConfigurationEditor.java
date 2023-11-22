@@ -220,7 +220,6 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
         downloadPanel.add(new JLabel("Offset:"));
         offset = addOffsetInput(OpenOcdConfiguration.DEF_PROGRAM_OFFSET);
-
         downloadPanel.add(offset);
 
         downloadPanel.add(new JLabel("Perform:"));
