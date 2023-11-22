@@ -272,7 +272,7 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
 
     private void checkPort(int port) throws RuntimeConfigurationException {
         if (port <= 1024 || port > 65535)
-            throw new RuntimeConfigurationException("Port value must be in the range [1024...65535]");
+            throw new RuntimeConfigurationException("Port value must be in the range [1025...65535]");
     }
 
     public DebuggerData getDebuggerData() {
