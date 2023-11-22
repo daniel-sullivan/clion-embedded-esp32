@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.3.6
+
+### Fixed
+
+- Fixed program offsets not properly updating ([#15](https://github.com/ThexXTURBOXx/clion-embedded-esp32/issues/15))
+
 ## 0.3.5
 
 ### Fixed
