@@ -120,6 +120,9 @@ public final class OpenOcdComponent {
             commandLine.addParameters("-c", command);
         }
 
+        if (additionalCommand != null && !additionalCommand.isEmpty())
+            commandLine.addParameters("-c", additionalCommand);
+
         commandLine.addParameters("-c", config.getResetType().getCommand());
 
         commandLine.addParameters("-c", "echo \"" + FLASH_SUCCESS_TEXT + "\"");
@@ -139,7 +142,8 @@ public final class OpenOcdComponent {
     }
 
     private static void openOcdNotFound() throws ConfigurationException {
-        throw new ConfigurationException("Please open settings dialog and fix OpenOCD home", "OpenOCD Config Error");
+        throw new ConfigurationException("Please open settings dialog and fix OpenOCD home", "OpenOCD Config "
+                                                                                             + "Error");
     }
 
     public void stopOpenOcd() {
@@ -151,7 +155,8 @@ public final class OpenOcdComponent {
         });
     }
 
-    public Future<Status> startOpenOcd(OpenOcdConfiguration config, @Nullable File fileToLoad) throws ConfigurationException {
+    public Future<Status> startOpenOcd(OpenOcdConfiguration config, @Nullable File fileToLoad) throws
+            ConfigurationException {
         CompletableFuture<Status> ret = new CompletableFuture<>();
         if (config == null) {
             ret.obtrudeValue(Status.FLASH_ERROR);

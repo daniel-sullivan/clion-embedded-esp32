@@ -143,7 +143,7 @@ class OpenOcdLauncher extends CidrLauncher {
         new Thread(() -> {
             while (!debugProcess.getCurrentStateMessage().equals("Connected")) {
                 try {
-                    Thread.sleep(100); // Try to be a little bit kind to the CPU...
+                    Thread.onSpinWait();
                 } catch (Throwable ignored) {
                 }
             }
