@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.3.8
+
+### Fixed
+
+- Updated to 2024.2 EAP
+
 ## 0.3.7
 
 ### Fixed

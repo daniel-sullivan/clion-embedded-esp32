@@ -187,7 +187,7 @@ public final class OpenOcdComponent {
                             () -> !process.isProcessTerminated() && !process.isProcessTerminating());
 
             openOCDConsole.run();
-            ret.obtrudeValue(null); // Unneeded. Complete anyways.
+            ret.obtrudeValue(null); // Unneeded. Complete anyway.
             return downloadFollower;
         } catch (ExecutionException e) {
             ExecutionErrorDialog.show(e, "OpenOCD Start Failed", project);
