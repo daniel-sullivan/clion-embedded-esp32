@@ -10,6 +10,7 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.util.ExecutionErrorDialog;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
@@ -186,7 +187,7 @@ public final class OpenOcdComponent {
                     .withStop(process::destroyProcess,
                             () -> !process.isProcessTerminated() && !process.isProcessTerminating());
 
-            openOCDConsole.run();
+            ApplicationManager.getApplication().invokeLater(openOCDConsole::run);
             ret.obtrudeValue(null); // Unneeded. Complete anyway.
             return downloadFollower;
         } catch (ExecutionException e) {

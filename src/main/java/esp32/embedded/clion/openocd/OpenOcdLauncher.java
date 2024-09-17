@@ -11,6 +11,7 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ExecutionConsole;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
@@ -36,6 +37,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -101,12 +104,20 @@ class OpenOcdLauncher extends CidrLauncher {
         CLionGDBDriverConfiguration gdbDriverConfiguration = new CLionGDBDriverConfiguration(getProject(), toolchain);
 
         xDebugSession.stop();
-        CidrRemoteGDBDebugProcess debugProcess =
-                new CidrRemoteGDBDebugProcess(gdbDriverConfiguration,
-                        remoteDebugParameters,
-                        xDebugSession,
-                        commandLineState.getConsoleBuilder(),
-                        project1 -> new Filter[0]);
+
+        AtomicReference<CidrRemoteGDBDebugProcess> debugProcessRef = new AtomicReference<>();
+        ApplicationManager.getApplication().invokeAndWait(() -> {
+            try {
+                debugProcessRef.set(new CidrRemoteGDBDebugProcess(gdbDriverConfiguration,
+                                remoteDebugParameters,
+                                xDebugSession,
+                                commandLineState.getConsoleBuilder(),
+                                project1 -> new Filter[0]));
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        CidrRemoteGDBDebugProcess debugProcess = debugProcessRef.get();
 
         debugProcess.getProcessHandler().addProcessListener(new ProcessAdapter() {
             @Override
