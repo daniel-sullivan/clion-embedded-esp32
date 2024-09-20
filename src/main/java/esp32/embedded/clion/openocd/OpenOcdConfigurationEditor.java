@@ -53,6 +53,8 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
     private JXRadioGroup<ProgramType> programType;
     private JCheckBox appendVerify;
 
+    private ExtendableTextField additionalProgramParameters;
+
 
     public OpenOcdConfigurationEditor(Project project,
                                       @NotNull CMakeBuildConfigurationHelper cMakeBuildConfigurationHelper) {
@@ -88,6 +90,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         ocdConfiguration.setDownloadType(downloadGroup.getSelectedValue());
         ocdConfiguration.setProgramType(programType.getSelectedValue());
         ocdConfiguration.setAppendVerify(appendVerify.isSelected());
+        ocdConfiguration.setAdditionalProgramParameters(additionalProgramParameters.getText());
 
         ocdConfiguration.setOffset(offset.getText());
         ocdConfiguration.setBootOffset(bootloaderOffset.getText());
@@ -130,6 +133,11 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         downloadGroup.setSelectedValue(ocd.getDownloadType());
         programType.setSelectedValue(ocd.getProgramType());
         appendVerify.setSelected(ocd.getAppendVerify());
+        if (ocd.getAdditionalProgramParameters() != null) {
+            additionalProgramParameters.setText(ocd.getAdditionalProgramParameters());
+        } else {
+            additionalProgramParameters.setText("");
+        }
 
         offset.setText(ocd.getOffset());
         bootloaderOffset.setText(ocd.getBootOffset());
@@ -195,6 +203,10 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
         appendVerify = new JCheckBox("Append verify parameter", OpenOcdConfiguration.DEF_APPEND_VERIFY);
         panel.add(appendVerify, gridBag.nextLine().next());
+
+        panel.add(new JLabel("Additional program parameters:"), gridBag.nextLine().next());
+        additionalProgramParameters = new ExtendableTextField(OpenOcdConfiguration.DEF_ADD_PROG_PARAM);
+        panel.add(additionalProgramParameters, gridBag.next().coverLine());
 
         JPanel portsPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 

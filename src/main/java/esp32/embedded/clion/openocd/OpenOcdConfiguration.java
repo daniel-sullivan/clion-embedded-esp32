@@ -41,6 +41,8 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
 
     public static final ProgramType DEF_PROGRAM_TYPE = ProgramType.PROGRAM_ESP;
     public static final boolean DEF_APPEND_VERIFY = true;
+    public static final String DEF_ADD_PROG_PARAM = "";
+    public static final boolean DEF_ADD_PROG_PARAM_SET = false;
 
     private static final String ATTR_DEBUGGER = "gdb_debugger";
     private static final String ATTR_GDB_PORT = "gdb_port";
@@ -63,6 +65,8 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
 
     public static final String ATTR_PROGRAM_TYPE_CONFIG = "prog_type_cfg";
     public static final String ATTR_APPEND_VERIFY_CONFIG = "app_verify_cfg";
+    public static final String ATTR_ADD_PROG_PARAM_CONFIG = "add_prog_param_cfg";
+    public static final String ATTR_ADD_PROG_PARAM_SET_CONFIG = "add_prog_param_set_cfg";
 
 
     private DebuggerData debuggerData = DEF_DEBUGGER;
@@ -86,6 +90,8 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
 
     private ProgramType programType = DEF_PROGRAM_TYPE;
     private boolean appendVerify = DEF_APPEND_VERIFY;
+    private String additionalProgramParameters = DEF_ADD_PROG_PARAM;
+    private boolean additionalProgramParametersSet = DEF_ADD_PROG_PARAM_SET;
 
     public enum DownloadType {
 
@@ -197,6 +203,10 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         String programTypeStr = element.getAttributeValue(ATTR_PROGRAM_TYPE_CONFIG);
         programType = programTypeStr != null ? ProgramType.valueOf(programTypeStr) : DEF_PROGRAM_TYPE;
         appendVerify = readBoolAttr(element, ATTR_APPEND_VERIFY_CONFIG, DEF_APPEND_VERIFY);
+
+        additionalProgramParametersSet = readBoolAttr(element, ATTR_ADD_PROG_PARAM_SET_CONFIG, DEF_ADD_PROG_PARAM_SET);
+        additionalProgramParameters = element.getAttributeValue(ATTR_ADD_PROG_PARAM_CONFIG, null,
+                additionalProgramParametersSet ? null : DEF_ADD_PROG_PARAM);
     }
 
     private int readIntAttr(@NotNull Element element, String name, int def) {
@@ -260,6 +270,9 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
 
         element.setAttribute(ATTR_PROGRAM_TYPE_CONFIG, programType.name());
         element.setAttribute(ATTR_APPEND_VERIFY_CONFIG, String.valueOf(appendVerify));
+
+        element.setAttribute(ATTR_ADD_PROG_PARAM_SET_CONFIG, String.valueOf(additionalProgramParametersSet));
+        element.setAttribute(ATTR_ADD_PROG_PARAM_CONFIG, additionalProgramParameters == null ? "" : additionalProgramParameters);
     }
 
     @Override
@@ -419,4 +432,12 @@ public class OpenOcdConfiguration extends CMakeAppRunConfiguration implements Ci
         this.appendVerify = appendVerify;
     }
 
+    public String getAdditionalProgramParameters() {
+        return additionalProgramParameters;
+    }
+
+    public void setAdditionalProgramParameters(String additionalProgramParameters) {
+        this.additionalProgramParameters = additionalProgramParameters;
+        this.additionalProgramParametersSet = additionalProgramParameters != null;
+    }
 }

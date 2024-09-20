@@ -97,12 +97,16 @@ public final class OpenOcdComponent {
         if (!StringUtil.isEmpty(config.getBootBinPath())) {
             commandLine.addParameters("-c",
                     config.getProgramType().toString() + " " + config.getBootBinPath() + " "
-                    + config.getBootOffset() + (config.getAppendVerify() ? " verify" : ""));
+                    + config.getBootOffset() + (config.getAppendVerify() ? " verify" : "") +
+                            (config.getAdditionalProgramParameters() != null ?
+                                    " " + config.getAdditionalProgramParameters() : ""));
         }
         if (!StringUtil.isEmpty(config.getPartitionBinPath())) {
             commandLine.addParameters("-c",
                     config.getProgramType().toString() + " " + config.getPartitionBinPath() + " "
-                    + config.getPartitionOffset() + (config.getAppendVerify() ? " verify" : ""));
+                    + config.getPartitionOffset() + (config.getAppendVerify() ? " verify" : "") +
+                            (config.getAdditionalProgramParameters() != null ?
+                                    " " + config.getAdditionalProgramParameters() : ""));
         }
 
         if (fileToLoad != null) { // Program Command
@@ -115,6 +119,10 @@ public final class OpenOcdComponent {
 
             if (config.getAppendVerify()) {
                 command += " verify";
+            }
+
+            if (config.getAdditionalProgramParameters() != null){
+                command += " " + config.getAdditionalProgramParameters();
             }
 
             commandLine.addParameters("-c", command);
