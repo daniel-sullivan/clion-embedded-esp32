@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.4.0
+
+### Fixed
+
+- Update IntelliJ platform plugin
+
 ## 0.3.8
 
 ### Fixed
