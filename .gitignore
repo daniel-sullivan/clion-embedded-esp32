@@ -4,3 +4,5 @@
 .qodana
 build
 release\.properties
+.DS_Store
+gradle/.DS_Store
