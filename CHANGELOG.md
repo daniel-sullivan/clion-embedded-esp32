@@ -4,9 +4,17 @@
 
 ## 0.4.0
 
-### Fixed
+### Added
+
+- Add additional program parameters ([#22](https://github.com/ThexXTURBOXx/clion-embedded-esp32/issues/22)) through PR ([#23](https://github.com/ThexXTURBOXx/clion-embedded-esp32/pull/23))
+
+### Changed
 
 - Update IntelliJ platform plugin
+
+### Fixed
+
+- Fix OpenOCD launching in wrong thread ([#21](https://github.com/ThexXTURBOXx/clion-embedded-esp32/issues/21)) through PR ([#24](https://github.com/ThexXTURBOXx/clion-embedded-esp32/pull/24))
 
 ## 0.3.8
 
