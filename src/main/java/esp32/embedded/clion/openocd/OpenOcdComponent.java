@@ -10,6 +10,8 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.util.ExecutionErrorDialog;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
@@ -22,21 +24,23 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.concurrency.FutureResult;
 import java.io.File;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.jdesktop.swingx.util.OS;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class OpenOcdComponent {
+@Service(Service.Level.PROJECT)
+public final class OpenOcdComponent {
 
     public static final String SCRIPTS_PATH_SHORT = "scripts";
+    public static final String SCRIPTS_PATH_MEDIUM = "openocd/" + SCRIPTS_PATH_SHORT;
     public static final String SCRIPTS_PATH_LONG = "share/openocd/" + SCRIPTS_PATH_SHORT;
     public static final String BIN_OPENOCD;
     private static final Key<Long> UPLOAD_LOAD_COUNT_KEY = new Key<>(OpenOcdConfiguration.class.getName() +
-            "#LAST_DOWNLOAD_MOD_COUNT");
+                                                                     "#LAST_DOWNLOAD_MOD_COUNT");
     private static final String ERROR_PREFIX = "Error: ";
     private static final String[] IGNORED_STRINGS = {
             "clearing lockup after double fault",
@@ -44,7 +48,7 @@ public class OpenOcdComponent {
 
     private final static String[] FAIL_STRINGS = {
             "** Programming Failed **", "communication failure", "** OpenOCD init failed **"};
-    private static final String FLASH_SUCCESS_TEXT = "** Programming Finished **";
+    private static final String FLASH_SUCCESS_TEXT = "** Program Flash Complete! **";
     private static final Logger LOG = Logger.getInstance(OpenOcdComponent.class);
     private static final String ADAPTER_SPEED = "adapter speed";
 
@@ -63,7 +67,7 @@ public class OpenOcdComponent {
     public static GeneralCommandLine createOcdCommandLine(OpenOcdConfiguration config, File fileToLoad,
                                                           @Nullable String additionalCommand, boolean shutdown) throws ConfigurationException {
         Project project = config.getProject();
-        OpenOcdSettingsState ocdSettings = project.getComponent(OpenOcdSettingsState.class);
+        OpenOcdSettingsState ocdSettings = project.getService(OpenOcdSettingsState.class);
         if (StringUtil.isEmpty(config.getBoardConfigFile())) {
             throw new ConfigurationException("Board Config file is not defined.", "OpenOCD Run Error");
         }
@@ -85,14 +89,26 @@ public class OpenOcdComponent {
             commandLine.addParameters("-c", "telnet_port " + config.getTelnetPort());
         }
 
-        commandLine.addParameters("-f", config.getInterfaceConfigFile());
+        if (!StringUtil.isEmpty(config.getInterfaceConfigFile())) {
+            commandLine.addParameters("-f", config.getInterfaceConfigFile());
+        }
 
         commandLine.addParameters("-f", config.getBoardConfigFile());
 
-        commandLine.addParameters("-c", config.getProgramType().toString() + " " + config.getBootBinPath() + " "
-                + config.getBootOffset() + (config.getAppendVerify() ? " verify" : ""));
-        commandLine.addParameters("-c", config.getProgramType().toString() + " " + config.getPartitionBinPath() + " "
-                + config.getPartitionOffset() + (config.getAppendVerify() ? " verify" : ""));
+        if (!StringUtil.isEmpty(config.getBootBinPath())) {
+            commandLine.addParameters("-c",
+                    config.getProgramType().toString() + " " + config.getBootBinPath() + " "
+                    + config.getBootOffset() + (config.getAppendVerify() ? " verify" : "") +
+                            (config.getAdditionalProgramParameters() != null ?
+                                    " " + config.getAdditionalProgramParameters() : ""));
+        }
+        if (!StringUtil.isEmpty(config.getPartitionBinPath())) {
+            commandLine.addParameters("-c",
+                    config.getProgramType().toString() + " " + config.getPartitionBinPath() + " "
+                    + config.getPartitionOffset() + (config.getAppendVerify() ? " verify" : "") +
+                            (config.getAdditionalProgramParameters() != null ?
+                                    " " + config.getAdditionalProgramParameters() : ""));
+        }
 
         if (fileToLoad != null) { // Program Command
             String command =
@@ -106,14 +122,19 @@ public class OpenOcdComponent {
                 command += " verify";
             }
 
+            if (config.getAdditionalProgramParameters() != null){
+                command += " " + config.getAdditionalProgramParameters();
+            }
+
             commandLine.addParameters("-c", command);
         }
 
-        if (config.getHAR()) {
-            commandLine.addParameters("-c", "init; reset halt");
-        } else {
-            commandLine.addParameters("-c", "init; reset");
-        }
+        if (additionalCommand != null && !additionalCommand.isEmpty())
+            commandLine.addParameters("-c", additionalCommand);
+
+        commandLine.addParameters("-c", config.getResetType().getCommand());
+
+        commandLine.addParameters("-c", "echo \"" + FLASH_SUCCESS_TEXT + "\"");
 
         if (shutdown) {
             commandLine.addParameters("-c", "shutdown");
@@ -130,7 +151,8 @@ public class OpenOcdComponent {
     }
 
     private static void openOcdNotFound() throws ConfigurationException {
-        throw new ConfigurationException("Please open settings dialog and fix OpenOCD home", "OpenOCD Config Error");
+        throw new ConfigurationException("Please open settings dialog and fix OpenOCD home", "OpenOCD Config "
+                                                                                             + "Error");
     }
 
     public void stopOpenOcd() {
@@ -142,12 +164,18 @@ public class OpenOcdComponent {
         });
     }
 
-    public Future<STATUS> startOpenOcd(OpenOcdConfiguration config, @Nullable File fileToLoad) throws ConfigurationException {
-        if (config == null) return new FutureResult<>(STATUS.FLASH_ERROR);
+    public Future<Status> startOpenOcd(OpenOcdConfiguration config, @Nullable File fileToLoad) throws
+            ConfigurationException {
+        CompletableFuture<Status> ret = new CompletableFuture<>();
+        if (config == null) {
+            ret.obtrudeValue(Status.FLASH_ERROR);
+            return ret;
+        }
         GeneralCommandLine commandLine = createOcdCommandLine(config, fileToLoad, null, false);
         if (process != null && !process.isProcessTerminated()) {
-            LOG.info("openOcd is already run");
-            return new FutureResult<>(STATUS.FLASH_ERROR);
+            LOG.info("OpenOCD is already run");
+            ret.obtrudeValue(Status.FLASH_ERROR);
+            return ret;
         }
         VirtualFile virtualFile = fileToLoad != null ? VfsUtil.findFileByIoFile(fileToLoad, true) : null;
         Project project = config.getProject();
@@ -167,18 +195,35 @@ public class OpenOcdComponent {
                     .withStop(process::destroyProcess,
                             () -> !process.isProcessTerminated() && !process.isProcessTerminating());
 
-            openOCDConsole.run();
+            ApplicationManager.getApplication().invokeLater(openOCDConsole::run);
+            ret.obtrudeValue(null); // Unneeded. Complete anyway.
             return downloadFollower;
         } catch (ExecutionException e) {
             ExecutionErrorDialog.show(e, "OpenOCD Start Failed", project);
-            return new FutureResult<>(STATUS.FLASH_ERROR);
+            ret.obtrudeValue(Status.FLASH_ERROR);
+            return ret;
         }
     }
 
-    public enum STATUS {
+    public enum Status {
         FLASH_SUCCESS,
         FLASH_WARNING,
         FLASH_ERROR,
+    }
+
+    public enum FlashedStatus {
+        INITIALIZED, APP_OK;
+
+        private FlashedStatus nextState;
+
+        static {
+            INITIALIZED.nextState = APP_OK;
+            APP_OK.nextState = APP_OK;
+        }
+
+        public FlashedStatus getNextState() {
+            return nextState;
+        }
     }
 
     private class ErrorFilter implements Filter {
@@ -208,16 +253,18 @@ public class OpenOcdComponent {
                         return HighlighterLayer.ERROR;
                     }
                 };
-            } else if (line.contains(FLASH_SUCCESS_TEXT)) {
+            } else if (line.equals(FLASH_SUCCESS_TEXT)) {
                 Informational.showSuccessfulDownloadNotification(project);
             }
             return null;
         }
     }
 
-    private class DownloadFollower extends FutureResult<STATUS> implements ProcessListener {
+    private class DownloadFollower extends CompletableFuture<Status> implements ProcessListener {
         @Nullable
         private final VirtualFile vRunFile;
+
+        private FlashedStatus flashedStatusListen = FlashedStatus.INITIALIZED;
 
         DownloadFollower(@Nullable VirtualFile vRunFile) {
             this.vRunFile = vRunFile;
@@ -232,10 +279,10 @@ public class OpenOcdComponent {
         public void processTerminated(@NotNull ProcessEvent event) {
             try {
                 if (!isDone()) {
-                    set(STATUS.FLASH_ERROR);
+                    obtrudeValue(Status.FLASH_ERROR);
                 }
             } catch (Exception e) {
-                set(STATUS.FLASH_ERROR);
+                obtrudeValue(Status.FLASH_ERROR);
             }
         }
 
@@ -248,21 +295,19 @@ public class OpenOcdComponent {
         public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
             String text = event.getText().trim();
             if (containsOneOf(text, FAIL_STRINGS)) {
-                reset();
-                set(STATUS.FLASH_ERROR);
+                obtrudeValue(Status.FLASH_ERROR);
             } else if (vRunFile == null && text.startsWith(ADAPTER_SPEED)) {
-                reset();
-                set(STATUS.FLASH_SUCCESS);
-            } else if (text.equals(FLASH_SUCCESS_TEXT)) {
-                reset();
-                if (vRunFile != null) {
-                    UPLOAD_LOAD_COUNT_KEY.set(vRunFile, vRunFile.getModificationCount());
+                obtrudeValue(Status.FLASH_SUCCESS);
+            } else if (text.contains(FLASH_SUCCESS_TEXT)) {
+                if (flashedStatusListen == FlashedStatus.APP_OK) {
+                    if (vRunFile != null) {
+                        UPLOAD_LOAD_COUNT_KEY.set(vRunFile, vRunFile.getModificationCount());
+                    }
+                    obtrudeValue(Status.FLASH_SUCCESS);
                 }
-                set(STATUS.FLASH_SUCCESS);
-
+                flashedStatusListen = flashedStatusListen.getNextState();
             } else if (text.startsWith(ERROR_PREFIX) && !containsOneOf(text, IGNORED_STRINGS)) {
-                reset();
-                set(STATUS.FLASH_WARNING);
+                obtrudeValue(Status.FLASH_WARNING);
             }
         }
     }
@@ -275,7 +320,6 @@ public class OpenOcdComponent {
             if (text.contains(sampleString)) return true;
         }
         return false;
-
     }
 
     public static boolean isLatestUploaded(File runFile) {

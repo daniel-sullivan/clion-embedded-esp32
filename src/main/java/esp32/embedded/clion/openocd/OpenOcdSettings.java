@@ -1,6 +1,5 @@
 package esp32.embedded.clion.openocd;
 
-import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
@@ -32,7 +31,7 @@ import static com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW;
 /**
  * (c) elmot on 20.10.2017.
  */
-public class OpenOcdSettings implements ProjectComponent, Configurable {
+public class OpenOcdSettings implements Configurable {
     protected final Project project;
     private OpenOcdSettingsPanel panel = null;
 
@@ -48,29 +47,24 @@ public class OpenOcdSettings implements ProjectComponent, Configurable {
 
     @Override
     public boolean isModified() {
-        OpenOcdSettingsState state = project.getComponent(OpenOcdSettingsState.class);
+        OpenOcdSettingsState state = project.getService(OpenOcdSettingsState.class);
         if (state == null) return true;
         return !(
                 Objects.equals(panel.openOcdHome.getText(), state.openOcdHome) &&
-                        panel.shippedRadioButton.isSelected() == state.shippedGdb &&
-                        panel.autoUpdateCmake.isSelected() == state.autoUpdateCmake);
+                panel.shippedRadioButton.isSelected() == state.shippedGdb &&
+                panel.autoUpdateCmake.isSelected() == state.autoUpdateCmake);
     }
 
     @Override
     public void apply() throws ConfigurationException {
         panel.openOcdHome.validateContent();
 
-        OpenOcdSettingsState state = project.getComponent(OpenOcdSettingsState.class);
+        OpenOcdSettingsState state = project.getService(OpenOcdSettingsState.class);
         if (state != null) {
             state.openOcdHome = panel.openOcdHome.getText();
             state.shippedGdb = panel.shippedRadioButton.isSelected();
             state.autoUpdateCmake = panel.autoUpdateCmake.isSelected();
         }
-    }
-
-    @Override
-    public void disposeComponent() {
-        panel = null;
     }
 
     @Nullable
@@ -83,7 +77,7 @@ public class OpenOcdSettings implements ProjectComponent, Configurable {
 
     @Override
     public void reset() {
-        OpenOcdSettingsState state = project.getComponent(OpenOcdSettingsState.class);
+        OpenOcdSettingsState state = project.getService(OpenOcdSettingsState.class);
         panel.openOcdHome.setText(state.openOcdHome);
         panel.shippedRadioButton.setSelected(state.shippedGdb);
         panel.toolchainRadioButton.setSelected(!state.shippedGdb);
@@ -158,5 +152,7 @@ public class OpenOcdSettings implements ProjectComponent, Configurable {
             }
             return component;
         }
+
     }
+
 }

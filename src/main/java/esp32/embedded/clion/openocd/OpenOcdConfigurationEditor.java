@@ -13,12 +13,15 @@ import com.intellij.util.ui.GridBag;
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration;
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfigurationSettingsEditor;
 import com.jetbrains.cidr.cpp.execution.CMakeBuildConfigurationHelper;
+import com.jetbrains.cidr.cpp.execution.remote.DebuggerData;
+import com.jetbrains.cidr.cpp.execution.remote.DebuggersComboBoxWithModel;
 import esp32.embedded.clion.openocd.OpenOcdConfiguration.DownloadType;
 import esp32.embedded.clion.openocd.OpenOcdConfiguration.ProgramType;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
+import java.util.Objects;
 import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -27,10 +30,13 @@ import org.jdesktop.swingx.JXRadioGroup;
 import org.jetbrains.annotations.NotNull;
 
 public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettingsEditor {
+    public static final String BOOTLOADER_FILE = "Bootloader file";
+    public static final String PART_TABLE_FILE = "Partition Table file";
+    private DebuggersComboBoxWithModel debuggers;
     private IntegerField gdbPort;
     private IntegerField telnetPort;
     private ExtendableTextField offset;
-    private JCheckBox harCheck;
+    private JXRadioGroup<OpenOcdConfiguration.ResetType> resetGroup;
     private JCheckBox flushRegsCheck;
     private JCheckBox initialBreakpointCheck;
     private ExtendableTextField initialBreakpointName;
@@ -46,6 +52,8 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
     private JXRadioGroup<ProgramType> programType;
     private JCheckBox appendVerify;
+
+    private ExtendableTextField additionalProgramParameters;
 
 
     public OpenOcdConfigurationEditor(Project project,
@@ -73,16 +81,21 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
         gdbPort.validateContent();
         telnetPort.validateContent();
+
+        DebuggerData selectedDebugger = debuggers.getSelectedDebugger();
+        ocdConfiguration.setDebuggerData(selectedDebugger);
+
         ocdConfiguration.setGdbPort(gdbPort.getValue());
         ocdConfiguration.setTelnetPort(telnetPort.getValue());
         ocdConfiguration.setDownloadType(downloadGroup.getSelectedValue());
         ocdConfiguration.setProgramType(programType.getSelectedValue());
         ocdConfiguration.setAppendVerify(appendVerify.isSelected());
+        ocdConfiguration.setAdditionalProgramParameters(additionalProgramParameters.getText());
 
         ocdConfiguration.setOffset(offset.getText());
         ocdConfiguration.setBootOffset(bootloaderOffset.getText());
         ocdConfiguration.setPartitionOffset(partitionTableOffset.getText());
-        ocdConfiguration.setHAR(harCheck.isSelected());
+        ocdConfiguration.setResetType(resetGroup.getSelectedValue());
         ocdConfiguration.setFlushRegs(flushRegsCheck.isSelected());
         ocdConfiguration.setInitialBreak(initialBreakpointCheck.isSelected());
         ocdConfiguration.setInitialBreakName(initialBreakpointName.getText());
@@ -94,30 +107,42 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
         OpenOcdConfiguration ocd = (OpenOcdConfiguration) cMakeAppRunConfiguration;
 
-        openocdHome = ocd.getProject().getComponent(OpenOcdSettingsState.class).openOcdHome;
+        openocdHome = ocd.getProject().getService(OpenOcdSettingsState.class).openOcdHome;
 
         boardConfigFile.setText(ocd.getBoardConfigFile());
         interfaceConfigFile.setText(ocd.getInterfaceConfigFile());
 
-        String root =
-                ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0]).getContentRoots()[0].getPath();
-        String bootBinPath = ocd.getBootBinPath().replaceAll(root + "/", "");
+        ModuleRootManager manager = ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0]);
+        String root = Objects.requireNonNull(getContentRoot(manager)).getPath();
+
+        String bootBinPath = ocd.getBootBinPath();
+        if (bootBinPath != null)
+            bootBinPath = bootBinPath.replaceAll(root + "/", "");
         bootloaderFile.setText(bootBinPath);
 
-        String partitionPath = ocd.getPartitionBinPath().replaceAll(root + "/", "");
+        String partitionPath = ocd.getPartitionBinPath();
+        if (partitionPath != null)
+            partitionPath = partitionPath.replaceAll(root + "/", "");
         partitionTableFile.setText(partitionPath);
 
-        gdbPort.setText("" + ocd.getGdbPort());
+        debuggers.resetModel(ocd.getDebuggerData());
 
-        telnetPort.setText("" + ocd.getTelnetPort());
+        gdbPort.setText(String.valueOf(ocd.getGdbPort()));
+
+        telnetPort.setText(String.valueOf(ocd.getTelnetPort()));
         downloadGroup.setSelectedValue(ocd.getDownloadType());
         programType.setSelectedValue(ocd.getProgramType());
         appendVerify.setSelected(ocd.getAppendVerify());
+        if (ocd.getAdditionalProgramParameters() != null) {
+            additionalProgramParameters.setText(ocd.getAdditionalProgramParameters());
+        } else {
+            additionalProgramParameters.setText("");
+        }
 
         offset.setText(ocd.getOffset());
         bootloaderOffset.setText(ocd.getBootOffset());
         partitionTableOffset.setText(ocd.getPartitionOffset());
-        harCheck.setSelected(ocd.getHAR());
+        resetGroup.setSelectedValue(ocd.getResetType());
         flushRegsCheck.setSelected(ocd.getFlushRegs());
         initialBreakpointCheck.setSelected(ocd.getInitialBreak());
         initialBreakpointName.setText(ocd.getInitialBreakName());
@@ -133,23 +158,26 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
             }
         }
 
-        panel.add(new JLabel("Board config file:"), gridBag.nextLine().next());
+        this.debuggers = new DebuggersComboBoxWithModel(this.myProject, true, true);
+        panel.add(new JLabel("Debugger:"), gridBag.nextLine().next());
+        panel.add(debuggers.getComponent(), gridBag.next().coverLine());
 
-        boardConfigFile = new FileChooseInput.BoardCfg("Board config", VfsUtil.getUserHomeDir(), this::getOpenocdHome);
+        panel.add(new JLabel("Board config file:"), gridBag.nextLine().next());
+        boardConfigFile = new FileChooseInput.BoardCfg("Board config", VfsUtil.getUserHomeDir(),
+                this::getOpenocdHome);
         panel.add(boardConfigFile, gridBag.next().coverLine());
 
         panel.add(new JLabel("Interface config file:"), gridBag.nextLine().next());
-
         interfaceConfigFile = new FileChooseInput.InterfaceCfg("Interface config", VfsUtil.getUserHomeDir(),
                 this::getOpenocdHome);
         panel.add(interfaceConfigFile, gridBag.next().coverLine());
 
-        VirtualFile contentRoot =
-                ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0]).getContentRoots()[0];
+        ModuleRootManager manager = ModuleRootManager.getInstance(ModuleManager.getInstance(myProject).getModules()[0]);
+        VirtualFile contentRoot = getContentRoot(manager);
 
         JPanel bootloaderPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
         bootloaderPanel.add(new JLabel("Bootloader binary:"));
-        bootloaderFile = new FileChooseInput.BinFile("Bootloader file", VfsUtil.getUserHomeDir(), contentRoot);
+        bootloaderFile = new FileChooseInput.BinFile(BOOTLOADER_FILE, VfsUtil.getUserHomeDir(), contentRoot);
         bootloaderPanel.add(bootloaderFile);
 
         bootloaderPanel.add(new JLabel("Bootloader offset:"));
@@ -160,7 +188,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
         JPanel partitionPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
         partitionPanel.add(new JLabel("Partition Table binary:"));
-        partitionTableFile = new FileChooseInput.BinFile("Partition Table file", VfsUtil.getUserHomeDir(), contentRoot);
+        partitionTableFile = new FileChooseInput.BinFile(PART_TABLE_FILE, VfsUtil.getUserHomeDir(), contentRoot);
         partitionPanel.add(partitionTableFile);
 
         partitionPanel.add(new JLabel("Partition Table offset:"));
@@ -175,6 +203,10 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
 
         appendVerify = new JCheckBox("Append verify parameter", OpenOcdConfiguration.DEF_APPEND_VERIFY);
         panel.add(appendVerify, gridBag.nextLine().next());
+
+        panel.add(new JLabel("Additional program parameters:"), gridBag.nextLine().next());
+        additionalProgramParameters = new ExtendableTextField(OpenOcdConfiguration.DEF_ADD_PROG_PARAM);
+        panel.add(additionalProgramParameters, gridBag.next().coverLine());
 
         JPanel portsPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 
@@ -195,19 +227,41 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
     @NotNull
     private JPanel createDownloadSelector() {
         JPanel downloadPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-        GridLayout downloadGrid = new GridLayout(2, 2);
+        GridLayout downloadGrid = new GridLayout(3, 2);
         downloadPanel.setLayout(downloadGrid);
 
         downloadPanel.add(new JLabel("Offset:"));
         offset = addOffsetInput(OpenOcdConfiguration.DEF_PROGRAM_OFFSET);
-
         downloadPanel.add(offset);
 
         downloadPanel.add(new JLabel("Perform:"));
         downloadGroup = new JXRadioGroup<>(DownloadType.values());
         downloadPanel.add(downloadGroup);
 
+        downloadPanel.add(new JLabel("Reset:"));
+        resetGroup = new JXRadioGroup<>(OpenOcdConfiguration.ResetType.values());
+        resetGroup.addActionListener(e -> {
+            if (resetGroup.getSelectedValue().supportsBreakpoints()) {
+                initialBreakpointCheck.setVisible(true);
+                if (initialBreakpointCheck.isSelected()) initialBreakpointName.setVisible(true);
+            } else {
+                initialBreakpointCheck.setVisible(false);
+                initialBreakpointName.setVisible(false);
+            }
+        });
+        downloadPanel.add(resetGroup);
+
         return downloadPanel;
+    }
+
+    private VirtualFile getContentRoot(ModuleRootManager manager) {
+        VirtualFile[] contentRoots = manager.getContentRoots();
+        if (contentRoots.length > 0) return contentRoots[0];
+
+        VirtualFile[] excludeRoots = manager.getExcludeRoots();
+        if (excludeRoots.length > 0) return excludeRoots[0].getParent();
+
+        throw new IllegalStateException("Cannot find content root!");
     }
 
     private JPanel createGDBSettingsSelector() {
@@ -218,17 +272,7 @@ public class OpenOcdConfigurationEditor extends CMakeAppRunConfigurationSettings
         flushRegsCheck = new JCheckBox("Flush registers", OpenOcdConfiguration.DEF_FLUSH_REGS);
         settingsPanel.add(flushRegsCheck);
 
-        harCheck = new JCheckBox("Halt after reset", OpenOcdConfiguration.DEF_HAR);
-        harCheck.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                initialBreakpointCheck.setVisible(true);
-                if (initialBreakpointCheck.isSelected()) initialBreakpointName.setVisible(true);
-            } else {
-                initialBreakpointCheck.setVisible(false);
-                initialBreakpointName.setVisible(false);
-            }
-        });
-        settingsPanel.add(harCheck);
+        settingsPanel.add(new JPanel()); // Placeholder
 
         initialBreakpointCheck = new JCheckBox("Break on function", OpenOcdConfiguration.DEF_BREAK_FUNCTION);
         initialBreakpointCheck.addItemListener(e -> initialBreakpointName.setVisible(e.getStateChange() == ItemEvent.SELECTED));

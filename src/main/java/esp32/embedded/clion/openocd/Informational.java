@@ -45,16 +45,16 @@ public class Informational {
     public static void showFailedDownloadNotification(Project project) {
         showMessage(project, MessageType.ERROR,
                 "MCU Communication FAILURE.\nCheck <a href=\"" +
-                        SETTINGS_PROTOCOL +
-                        OpenOcdSettings.class.getName()
-                        + "\">OpenOCD configuration</a> and connection.<br>" +
-                        "Plugin documentation is located <a href=\"" + HELP_URL + "\">here</a>");
+                SETTINGS_PROTOCOL +
+                OpenOcdSettings.class.getName()
+                + "\">OpenOCD configuration</a> and connection.<br>" +
+                "Plugin documentation is located <a href=\"" + HELP_URL + "\">here</a>");
     }
 
     public static void showPluginError(Project project, ConfigurationException e) {
         int optionNo = Messages.showDialog(project, e.getLocalizedMessage(), e.getTitle(),
-                new String[]{Messages.getOkButton(), CommonBundle.settingsAction(), CommonBundle.getHelpButtonText()}
-                , 0, Messages.getErrorIcon());
+                new String[]{Messages.getOkButton(), CommonBundle.settingsAction(), CommonBundle.getHelpButtonText()},
+                0, Messages.getErrorIcon());
         switch (optionNo) {
         case 1 -> ShowSettingsUtil.getInstance().showSettingsDialog(project, OpenOcdSettings.class);
         case 2 -> BrowserUtil.browse(HELP_URL);

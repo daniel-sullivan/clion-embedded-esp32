@@ -7,11 +7,13 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.components.fields.valueEditors.TextFieldValueEditor;
+import java.io.File;
 import java.util.function.Supplier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,7 +22,8 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
 
     public static final String BOARD_FOLDER = "board";
     public static final String INTERFACE_FOLDER = "interface";
-    public static final String BIN_FOLDER = "bin";
+    public static final String BOOT_BIN_FOLDER = "bootloader";
+    public static final String PART_BIN_FOLDER = "partition_table";
     protected final TextFieldValueEditor<VirtualFile> editor;
     private final FileChooserDescriptor fileDescriptor;
 
@@ -241,16 +244,28 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
         }
 
         public String getPath() {
-            // return Objects.requireNonNull(projectHome.findFileByRelativePath(getText())).getPath();
-            return projectHome.getPath() + "/" + getText();
+            String text = getText();
+            if (StringUtil.isEmpty(text)) {
+                return "";
+            }
+            if (new File(text).isAbsolute()) {
+                return text;
+            }
+            // return Objects.requireNonNull(projectHome.findFileByRelativePath(text)).getPath();
+            return projectHome.getPath() + "/" + text;
         }
 
         @Override
         protected VirtualFile getDefaultLocation() {
             if (projectHome != null) {
-                VirtualFile bin = projectHome.findFileByRelativePath(BIN_FOLDER);
-                if (bin != null) {
-                    return bin;
+                String valueName = getValueName();
+                if (valueName.equals(OpenOcdConfigurationEditor.BOOTLOADER_FILE)) {
+                    VirtualFile bin = projectHome.findFileByRelativePath(BOOT_BIN_FOLDER);
+                    if (bin != null) return bin;
+                }
+                if (valueName.equals(OpenOcdConfigurationEditor.PART_TABLE_FILE)) {
+                    VirtualFile bin = projectHome.findFileByRelativePath(PART_BIN_FOLDER);
+                    if (bin != null) return bin;
                 }
             }
             return super.getDefaultLocation();
@@ -313,7 +328,7 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
         @Override
         public boolean validateFile(VirtualFile virtualFile) {
             return virtualFile.exists() && !virtualFile.isDirectory()
-                    && VfsUtil.virtualToIoFile(virtualFile).canExecute();
+                   && VfsUtil.virtualToIoFile(virtualFile).canExecute();
         }
 
         @Override
@@ -337,7 +352,7 @@ public abstract class FileChooseInput extends TextFieldWithBrowseButton {
             if (!virtualFile.isDirectory()) return false;
             VirtualFile openOcdBinary = virtualFile.findFileByRelativePath(OpenOcdComponent.BIN_OPENOCD);
             if (openOcdBinary == null || openOcdBinary.isDirectory()
-                    || !VfsUtil.virtualToIoFile(openOcdBinary).canExecute()) return false;
+                || !VfsUtil.virtualToIoFile(openOcdBinary).canExecute()) return false;
             VirtualFile ocdScripts = OpenOcdSettingsState.findOcdScripts(virtualFile);
             if (ocdScripts != null) {
                 VirtualFile ocdBoard = ocdScripts.findFileByRelativePath(BOARD_FOLDER);

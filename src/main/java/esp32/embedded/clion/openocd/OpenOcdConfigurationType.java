@@ -19,7 +19,8 @@ public class OpenOcdConfigurationType extends CMakeRunConfigurationType {
     private static final String FACTORY_ID = "elmot.embedded.openocd.conf.factory";
     public static final String TYPE_ID = "elmot.embedded.openocd.conf.type";
     public static final NotNullLazyValue<Icon> ICON = NotNullLazyValue.lazy(() -> {
-        final Icon icon = IconLoader.findIcon("ocd_run.png", OpenOcdConfigurationType.class);
+        final Icon icon = IconLoader.findIcon("esp32/embedded/clion/openocd/ocd_run.png",
+                OpenOcdConfigurationType.class);
         return icon == null ? ProductIcons.getInstance().getProductIcon() : icon;
     });
     private final ConfigurationFactory factory;
@@ -27,7 +28,7 @@ public class OpenOcdConfigurationType extends CMakeRunConfigurationType {
     public OpenOcdConfigurationType() {
         super(TYPE_ID,
                 FACTORY_ID,
-                "OpenOCD Download & Run",
+                "OpenOCD Download & Run (ESP32)",
                 "Downloads and Runs Embedded Applications using OpenOCD",
                 ICON
         );
